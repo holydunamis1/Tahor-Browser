@@ -1,0 +1,73 @@
+name: verify
+
+# Gate 1. The only workflow with a push trigger, and only on batch/** (decision D-05).
+# It builds nothing and uploads nothing, so it spends no paid minutes.
+on:
+  push:
+    branches:
+      - 'batch/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the Flutter version pin
+        id: fv
+        run: echo "version=$(tr -d '[:space:]' < tool/flutter_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Static checks
+        run: bash tool/ci_run.sh ci-checks bash tool/ci_checks.sh
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ steps.fv.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: app
+        run: bash ../tool/ci_run.sh pub-get flutter pub get
+
+      - name: Generate localizations
+        working-directory: app
+        run: bash ../tool/ci_run.sh gen-l10n flutter gen-l10n
+
+      - name: Format check
+        run: bash tool/ci_run.sh format bash -c "git ls-files '*.dart' | xargs -r dart format --output=none --set-exit-if-changed"
+
+      - name: Analyze
+        working-directory: app
+        run: bash ../tool/ci_run.sh analyze flutter analyze
+
+      - name: Unit and widget tests
+        working-directory: app
+        run: |
+          if [ -d test ]; then
+            bash ../tool/ci_run.sh test flutter test
+          else
+            echo "No tests in this batch yet."
+          fi
+
+      - name: Blocklist tool tests
+        run: |
+          if [ -f tools/blocklist/pubspec.yaml ]; then
+            cd tools/blocklist
+            bash ../../tool/ci_run.sh blocklist-pub-get dart pub get
+            bash ../../tool/ci_run.sh blocklist-test dart test
+          else
+            echo "No blocklist tools in this batch yet."
+          fi

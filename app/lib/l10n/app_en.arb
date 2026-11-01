@@ -1,0 +1,7 @@
+{
+  "@@locale": "en",
+  "appName": "Tahor Fast & Private Browser",
+  "@appName": {
+    "description": "Store title and home-screen name of the application."
+  }
+}
