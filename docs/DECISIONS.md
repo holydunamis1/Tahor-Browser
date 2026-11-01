@@ -50,6 +50,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-42 | `verify.yml` also runs `dart format --set-exit-if-changed` over every tracked Dart file | Enforces one code style; the agent formats locally before every push |
 | D-43 | GitHub secret names follow the blueprint: `ANDROID_KEYSTORE_B64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD`, `BLOCKLIST_SIGNING_KEY_B64` | The owner's notes used `ANDROID_KEYSTORE_BASE64`; one set of names avoids drift |
 | D-44 | Ad units use Google's published sample IDs for the whole build; Google Play and Apple accounts are created after the app is complete | Owner's instruction on 2026-11-01 |
+| D-45 | The website is served by a Cloudflare Worker with static assets (project `tahor-browser`, created by the owner's Git connection), configured by `wrangler.jsonc` with `assets.directory` set to `./website`; no build command; the deploy command stays `npx wrangler deploy`. The public address is a `workers.dev` address instead of the `pages.dev` address the blueprint assumed | The Cloudflare dashboard created a Worker, which serves the same static files. The Worker name in `wrangler.jsonc` must match the project name |
 
 ## Verified pins
 
