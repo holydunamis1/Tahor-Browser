@@ -1,0 +1,156 @@
+name: build-android
+
+# Manual. Debug mode builds an installable APK and publishes it as a GitHub
+# pre-release asset (one direct download link). Release mode needs the signing
+# secrets and is inert until B41 configures release signing in Gradle.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Build mode
+        type: choice
+        options:
+          - debug
+          - release
+        default: debug
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-android
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Require the platform folders
+        run: |
+          if [ ! -d app/android ]; then
+            echo "::error::app/android is missing. Run the bootstrap-scaffold workflow first."
+            exit 1
+          fi
+
+      - name: Read the Flutter version pin
+        id: fv
+        run: echo "version=$(tr -d '[:space:]' < tool/flutter_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Java
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ steps.fv.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: app
+        run: bash ../tool/ci_run.sh pub-get flutter pub get
+
+      - name: Generate localizations
+        working-directory: app
+        run: bash ../tool/ci_run.sh gen-l10n flutter gen-l10n
+
+      - name: Build the debug APK
+        if: ${{ inputs.mode == 'debug' }}
+        working-directory: app
+        run: bash ../tool/ci_run.sh build-debug flutter build apk --debug
+
+      - name: Publish the debug APK as a pre-release
+        if: ${{ inputs.mode == 'debug' }}
+        run: |
+          set -euo pipefail
+          cp app/build/app/outputs/flutter-apk/app-debug.apk "tahor-debug-${GITHUB_RUN_NUMBER}.apk"
+          echo "apk_name=tahor-debug-${GITHUB_RUN_NUMBER}.apk" >> "$GITHUB_ENV"
+
+      - name: Create the pre-release
+        if: ${{ inputs.mode == 'debug' }}
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: debug-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Debug build ${{ github.run_number }}
+          body: Debug APK built from commit ${{ github.sha }}. Test build only; contains Google sample ad unit IDs.
+          prerelease: true
+          files: ${{ env.apk_name }}
+
+      - name: Decode the signing keystore
+        if: ${{ inputs.mode == 'release' }}
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$ANDROID_KEYSTORE_B64" | base64 -d > app/android/app/upload-keystore.jks
+          {
+            echo "storeFile=upload-keystore.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+          } > app/android/key.properties
+
+      - name: Remove the PDF engine web assets
+        if: ${{ inputs.mode == 'release' }}
+        working-directory: app
+        run: bash ../tool/ci_run.sh remove-wasm dart run pdfrx:remove_wasm_modules
+
+      - name: Build the app bundle
+        if: ${{ inputs.mode == 'release' }}
+        working-directory: app
+        run: bash ../tool/ci_run.sh build-aab flutter build appbundle --release --obfuscate --split-debug-info=symbols
+
+      - name: Build the per-ABI APKs
+        if: ${{ inputs.mode == 'release' }}
+        working-directory: app
+        run: bash ../tool/ci_run.sh build-apks flutter build apk --release --split-per-abi --obfuscate --split-debug-info=symbols
+
+      - name: Size report
+        if: ${{ inputs.mode == 'release' }}
+        working-directory: app
+        run: bash ../tool/ci_run.sh size-report flutter build apk --release --analyze-size --target-platform android-arm64 --obfuscate --split-debug-info=symbols-size
+
+      - name: Size gate
+        if: ${{ inputs.mode == 'release' }}
+        run: bash tool/ci_run.sh size-gate bash tool/check_size.sh app/build/app/outputs/flutter-apk
+
+      - name: Verify APK signatures
+        if: ${{ inputs.mode == 'release' }}
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)/apksigner"
+          for apk in app/build/app/outputs/flutter-apk/*-release.apk; do
+            "$apksigner" verify --print-certs "$apk"
+          done
+
+      - name: Merged manifest audit
+        if: ${{ inputs.mode == 'release' }}
+        run: |
+          if [ -f tool/audit_merged_manifest.sh ]; then
+            bash tool/ci_run.sh manifest-audit bash tool/audit_merged_manifest.sh
+          else
+            echo "The merged-manifest audit arrives in B45."
+          fi
+
+      - name: Upload the release artifacts
+        if: ${{ inputs.mode == 'release' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-release
+          path: |
+            app/build/app/outputs/flutter-apk/*-release.apk
+            app/build/app/outputs/bundle/release/*.aab
+            app/symbols
+            docs/size-baseline.json
+          if-no-files-found: warn

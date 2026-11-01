@@ -1,0 +1,54 @@
+name: bootstrap-scaffold
+
+# Run once. Generates app/android and app/ios with the pinned Flutter and commits
+# them to main. Replaces running flutter create on a local machine.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Abort if already bootstrapped
+        run: |
+          if [ -d app/android ] || [ -d app/ios ]; then
+            echo "::error::app/android or app/ios already exists; bootstrap runs once."
+            exit 1
+          fi
+
+      - name: Read the Flutter version pin
+        id: fv
+        run: echo "version=$(tr -d '[:space:]' < tool/flutter_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ steps.fv.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Generate the platform folders
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          bash tool/ci_run.sh flutter-create flutter create --org com.zdmgold --project-name tahorbrowser --platforms android,ios "$tmp/scaffold"
+          cp -R "$tmp/scaffold/android" app/android
+          cp -R "$tmp/scaffold/ios" app/ios
+          cp "$tmp/scaffold/.metadata" app/.metadata
+
+      - name: Commit to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/android app/ios app/.metadata
+          git commit -m "bootstrap: generate android and ios platform folders"
+          git push origin HEAD:main
