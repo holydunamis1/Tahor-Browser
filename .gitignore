@@ -1,0 +1,57 @@
+# ---- Flutter / Dart ----
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+.fvm/
+build/
+coverage/
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.DS_Store
+*.log
+# Generated localizations (produced by `flutter gen-l10n` in every workflow)
+app/lib/l10n/gen/
+# pubspec.lock stays tracked on purpose (exact pins are enforced in CI)
+
+# ---- Android ----
+**/android/.gradle/
+**/android/captures/
+**/android/local.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/android/key.properties
+**/android/app/*.jks
+GeneratedPluginRegistrant.java
+GeneratedPluginRegistrant.m
+GeneratedPluginRegistrant.h
+symbols/
+app.*.symbols
+app.*.map.json
+
+# ---- iOS ----
+Pods/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/.symlinks/
+**/ios/**/xcuserdata/
+**/ios/**/*.xcworkspace/xcuserdata/
+**/DerivedData/
+*.ipa
+
+# ---- Secrets and signing material: never committed ----
+*.jks
+*.keystore
+*.p12
+*.pem
+*.mobileprovision
+key.properties
+.env
+.env.*
