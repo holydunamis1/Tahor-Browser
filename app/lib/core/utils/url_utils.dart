@@ -5,8 +5,6 @@ enum InputKind { navigation, search, refused }
 
 /// The result of [resolveInput].
 class ResolvedInput {
-  const ResolvedInput._(this.kind, this.uri, this.reason);
-
   /// Open [uri] as a page.
   const ResolvedInput.navigation(Uri this.uri)
     : kind = InputKind.navigation,

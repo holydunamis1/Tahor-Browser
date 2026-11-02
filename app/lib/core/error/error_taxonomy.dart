@@ -115,17 +115,16 @@ final class NetworkError extends AppError {
 
   /// A server answered with an error status. Server faults (5xx) are worth
   /// retrying; client faults (4xx) are not.
-  NetworkError.http(int status)
-    : this._(
-        code: 'network.http.$status',
-        retryability: status >= 500
-            ? Retryability.retriable
-            : Retryability.terminal,
-        treatment: status >= 500
-            ? ErrorTreatment.inlineBanner
-            : ErrorTreatment.feedbackBanner,
-        detail: 'status $status',
-      );
+  factory NetworkError.http(int status) => NetworkError._(
+    code: 'network.http.$status',
+    retryability: status >= 500
+        ? Retryability.retriable
+        : Retryability.terminal,
+    treatment: status >= 500
+        ? ErrorTreatment.inlineBanner
+        : ErrorTreatment.feedbackBanner,
+    detail: 'status $status',
+  );
 }
 
 final class StorageError extends AppError {
@@ -193,20 +192,18 @@ final class PermissionError extends AppError {
        );
 
   /// The user declined; asking again can succeed.
-  PermissionError.denied(String permission)
-    : this._(
-        code: 'permission.denied.$permission',
-        retryability: Retryability.retriable,
-        detail: permission,
-      );
+  factory PermissionError.denied(String permission) => PermissionError._(
+    code: 'permission.denied.$permission',
+    retryability: Retryability.retriable,
+    detail: permission,
+  );
 
   /// Declined for good; only the system settings can change it.
-  PermissionError.deniedForever(String permission)
-    : this._(
-        code: 'permission.denied_forever.$permission',
-        retryability: Retryability.terminal,
-        detail: permission,
-      );
+  factory PermissionError.deniedForever(String permission) => PermissionError._(
+    code: 'permission.denied_forever.$permission',
+    retryability: Retryability.terminal,
+    detail: permission,
+  );
 }
 
 final class WebViewError extends AppError {

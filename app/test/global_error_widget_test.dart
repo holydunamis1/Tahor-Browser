@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/core/constants/design_tokens.dart';
 import 'package:tahorbrowser/core/error/global_error_widget.dart';
-import 'package:tahorbrowser/core/theme/app_theme_data.dart';
 import 'package:tahorbrowser/core/theme/dark_theme.dart';
 import 'package:tahorbrowser/core/theme/theme_builder.dart';
 

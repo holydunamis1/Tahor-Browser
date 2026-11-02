@@ -89,7 +89,8 @@ void main() {
       WidgetTester tester,
     ) async {
       final GlobalErrorHandler handler = GlobalErrorHandler();
-      final FlutterExceptionHandler? originalFlutter = FlutterError.onError;
+      final void Function(FlutterErrorDetails)? originalFlutter =
+          FlutterError.onError;
       final dynamic dispatcher = WidgetsBinding.instance.platformDispatcher;
       final dynamic originalDispatcher = dispatcher.onError;
       addTearDown(() {
