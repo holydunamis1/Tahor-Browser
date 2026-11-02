@@ -3,5 +3,90 @@
   "appName": "Tahor Fast & Private Browser",
   "@appName": {
     "description": "Store title and home-screen name of the application."
+  },
+  "errorFallbackTitle": "Something went wrong",
+  "@errorFallbackTitle": {
+    "description": "Title of the full-screen fallback shown when part of the app fails."
+  },
+  "errorFallbackMessage": "Tahor ran into a problem. You can try again or send us the error code.",
+  "@errorFallbackMessage": {
+    "description": "Body of the fallback screen."
+  },
+  "errorFallbackRetry": "Try again",
+  "@errorFallbackRetry": {
+    "description": "Button that rebuilds the app after a failure."
+  },
+  "errorFallbackReport": "Send error code",
+  "@errorFallbackReport": {
+    "description": "Button that opens an email containing only the error code."
+  },
+  "errorFallbackCodeLabel": "Error code",
+  "@errorFallbackCodeLabel": {
+    "description": "Label before the error code on the fallback screen."
+  },
+  "errorOffline": "You're offline. Check your connection and try again.",
+  "@errorOffline": {
+    "description": "Shown when a network request fails because there is no connection."
+  },
+  "errorTimeout": "The connection timed out. Try again.",
+  "@errorTimeout": {
+    "description": "Shown when a network request takes too long."
+  },
+  "errorServer": "The site had a problem (error {status}).",
+  "@errorServer": {
+    "description": "Shown when a server answers with an error status.",
+    "placeholders": {
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "errorStorage": "Tahor couldn't save your data. Changes may be lost when the app closes.",
+  "@errorStorage": {
+    "description": "Shown when saving to the device fails."
+  },
+  "errorStorageFull": "Your device is out of storage space.",
+  "@errorStorageFull": {
+    "description": "Shown when the device has no free space."
+  },
+  "errorPermissionDenied": "Permission denied. You can allow it in Settings.",
+  "@errorPermissionDenied": {
+    "description": "Shown when the user declined a permission."
+  },
+  "errorWebViewLoad": "This page couldn't be loaded.",
+  "@errorWebViewLoad": {
+    "description": "Shown in place of a page that failed to load."
+  },
+  "errorRendererGone": "The page stopped working and was reloaded.",
+  "@errorRendererGone": {
+    "description": "Shown after the web view process crashed and the page was restored."
+  },
+  "errorCertificate": "This site's security certificate is not trusted.",
+  "@errorCertificate": {
+    "description": "Shown when a site presents a bad certificate."
+  },
+  "errorBlocklistFetch": "Couldn't update the ad-blocking lists. The current lists stay active.",
+  "@errorBlocklistFetch": {
+    "description": "Shown when a manual ad-blocking list update fails."
+  },
+  "errorBlocklistVerify": "The downloaded lists failed a safety check and were not used.",
+  "@errorBlocklistVerify": {
+    "description": "Shown when a downloaded list fails its signature check."
+  },
+  "errorBillingUnavailable": "Purchases aren't available right now.",
+  "@errorBillingUnavailable": {
+    "description": "Shown when the app store cannot be reached."
+  },
+  "errorBillingFailed": "The purchase didn't go through. You were not charged.",
+  "@errorBillingFailed": {
+    "description": "Shown when a purchase fails."
+  },
+  "errorBillingPending": "Your purchase is being processed.",
+  "@errorBillingPending": {
+    "description": "Shown while the store processes a payment."
+  },
+  "errorUnexpected": "An unexpected problem occurred.",
+  "@errorUnexpected": {
+    "description": "Generic message for an unclassified error."
   }
 }

@@ -57,7 +57,7 @@ jobs:
         working-directory: app
         run: |
           if [ -d test ]; then
-            bash ../tool/ci_run.sh test flutter test
+            bash ../tool/ci_run.sh test flutter test --reporter failures-only
           else
             echo "No tests in this batch yet."
           fi
