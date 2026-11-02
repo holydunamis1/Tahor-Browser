@@ -93,21 +93,23 @@ void main() {
           FlutterError.onError;
       final dynamic dispatcher = WidgetsBinding.instance.platformDispatcher;
       final dynamic originalDispatcher = dispatcher.onError;
-      addTearDown(() {
+      try {
+        handler.install();
+        FlutterError.onError!(
+          FlutterErrorDetails(exception: StateError('boom')),
+        );
+        expect(handler.log.length, 1);
+        expect(handler.log.entries.single.error.code, 'unexpected.build');
+
+        final bool handled =
+            dispatcher.onError(StateError('async'), StackTrace.current) as bool;
+        expect(handled, isTrue);
+        expect(handler.log.length, 2);
+        expect(handler.log.entries.last.error.code, 'unexpected.async');
+      } finally {
         FlutterError.onError = originalFlutter;
         dispatcher.onError = originalDispatcher;
-      });
-
-      handler.install();
-      FlutterError.onError!(FlutterErrorDetails(exception: StateError('boom')));
-      expect(handler.log.length, 1);
-      expect(handler.log.entries.single.error.code, 'unexpected.build');
-
-      final bool handled =
-          dispatcher.onError(StateError('async'), StackTrace.current) as bool;
-      expect(handled, isTrue);
-      expect(handler.log.length, 2);
-      expect(handler.log.entries.last.error.code, 'unexpected.async');
+      }
     });
   });
 }

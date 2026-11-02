@@ -13,6 +13,7 @@ void main() {
         locale: const Locale('en'),
         delegates: const <LocalizationsDelegate<dynamic>>[
           AppLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
         ],
         child: Builder(
           builder: (BuildContext context) {

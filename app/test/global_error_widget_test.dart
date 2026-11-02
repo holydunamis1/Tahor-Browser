@@ -71,7 +71,7 @@ void main() {
         find
             .ancestor(
               of: find.text('Try again'),
-              matching: find.byType(ConstrainedBox),
+              matching: find.byType(GestureDetector),
             )
             .first,
       );
@@ -112,12 +112,14 @@ void main() {
     WidgetTester tester,
   ) async {
     final ErrorWidgetBuilder original = ErrorWidget.builder;
-    addTearDown(() => ErrorWidget.builder = original);
-    installErrorWidget(onRetry: () {}, onReport: (String _) {});
-
-    await tester.pumpWidget(const Boom());
-    expect(tester.takeException(), isA<StateError>());
-    expect(find.text('Something went wrong'), findsOneWidget);
-    expect(find.text('Error code: unexpected.build'), findsOneWidget);
+    try {
+      installErrorWidget(onRetry: () {}, onReport: (String _) {});
+      await tester.pumpWidget(const Boom());
+      expect(tester.takeException(), isA<StateError>());
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Error code: unexpected.build'), findsOneWidget);
+    } finally {
+      ErrorWidget.builder = original;
+    }
   });
 }
