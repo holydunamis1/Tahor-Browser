@@ -292,7 +292,7 @@ cd ~/tahor-browser && git pull
 
 ### 6.3 Seed commit and branch protection
 
-The one direct push to `main` created the branch and committed the ignore file before any dependency resolution (done). A repository ruleset requiring the `verify` status check on pull requests, with a bypass for GitHub Actions so the workflows that commit generated files can still push, is configured when the first batches have run. Automatically delete head branches is enabled.
+The one direct push to `main` created the branch and committed the ignore file before any dependency resolution (done). A repository ruleset (`main-protection`) requires a pull request and the `verify` status check on `main` and forbids force pushes and deletion, with no bypass actors; it is active since 2026-11-01 (D-50). Workflows that produce generated files push a `batch/` branch instead of `main`; the agent dispatches `verify` on it and squash-merges the pull request. Automatically delete head branches is enabled.
 
 ### 6.4 Accounts and secrets tracking (`store_submission/ACCOUNTS.md`, updated before every dashboard action)
 
@@ -724,7 +724,7 @@ Run: branch `batch/b13`, commit `b13: integration harness and iOS verify`. Then 
 - `tools/blocklist/pubspec.yaml`. Contains: the pure-Dart tool package.
 - `tools/blocklist/convert_abp_to_canonical.dart`. Contains: a CLI that reads ABP-syntax lists, keeps the supported subset (domain anchors, path prefixes, `$third-party`, resource types, `$domain=`, `##` element hiding), drops the rest (regex, scriptlets, redirects), reports the dropped counts, enforces size and rule-count caps, and writes two files: the compact seed bundled in the app and the full list published on the website.
 - `tools/blocklist/sign_blocklist.dart`. Contains: computes sha256, writes the manifest with the next version and signs it with the Ed25519 private key from the environment.
-- `.github/workflows/publish-blocklist.yml`. Contains: manual; downloads the upstream lists, runs the converter and signer with `BLOCKLIST_SIGNING_KEY_B64`, and commits `latest.txt`, `manifest.json` and `manifest.sig` to `website/blocklist/` on `main` with `GITHUB_TOKEN`.
+- `.github/workflows/publish-blocklist.yml`. Contains: manual; downloads the upstream lists, runs the converter and signer with `BLOCKLIST_SIGNING_KEY_B64`, and pushes `latest.txt`, `manifest.json` and `manifest.sig` in `website/blocklist/` to a `batch/blocklist-<run>` branch with `GITHUB_TOKEN` for the agent to verify and merge (D-50).
 
 Modified: `app/pubspec.yaml` (declare assets), `verify.yml` (`dart test` in `tools/blocklist`), `store_submission/ACCOUNTS.md` (signing keypair created). Tests: `tools/blocklist/test/converter_test` (supported subset kept, unsupported dropped and counted, caps and seed limit enforced).
 
@@ -1182,7 +1182,7 @@ Run: branch `batch/b39`, commit `b39: locale verification and language picker`. 
 - `app/assets/branding/icon.svg`, `icon_foreground.svg`, `splash_logo.svg`. Contains: vector sources authored as text (the adaptive-icon safe zone respected). Role: a phone-only workflow can author them; CI rasterizes.
 - `app/flutter_launcher_icons.yaml`. Contains: Android adaptive (background colour from the palette), iOS with alpha removed, minimum SDK 24.
 - `app/flutter_native_splash.yaml`. Contains: light and dark background colours, the logo, an Android 12 section.
-- `.github/workflows/generate-assets.yml`. Contains: manual; installs `librsvg2-bin`, rasterizes the SVGs, runs `dart run flutter_launcher_icons` and `dart run flutter_native_splash:create`, and commits the generated resources to `main` with `GITHUB_TOKEN`.
+- `.github/workflows/generate-assets.yml`. Contains: manual; installs `librsvg2-bin`, rasterizes the SVGs, runs `dart run flutter_launcher_icons` and `dart run flutter_native_splash:create`, and pushes the generated resources to a `batch/assets-<run>` branch with `GITHUB_TOKEN` for the agent to verify and merge (D-50).
 
 Modified: `pubspec.yaml` (branding assets and dev-dependency config).
 
@@ -1258,7 +1258,7 @@ Run: branch `batch/b46`, commit `b46: final documents`.
 5. Pay the Apple program, set up signing in Codemagic, dispatch `ios-release`, ship to TestFlight, and test on a physical iPhone (borrowed, or a used SE) once (iOS-5).
 6. Only after TestFlight validation, submit to the App Store.
 
-**Forbidden at every point:** a `push:` trigger on any build workflow; pushing directly to `main` (the one seed commit in section 6.3 excepted, and the generated-file commits made by the bootstrap, publish-blocklist and generate-assets workflows); merging a red batch; adding a permission without updating the allowlist and `PRIVACY_LABELS.md`; any `TODO`, `FIXME` or `UnimplementedError` in `lib/`.
+**Forbidden at every point:** a `push:` trigger on any build workflow; pushing directly to `main` (the one seed commit in section 6.3 and the one-time bootstrap commit excepted); merging a red batch; adding a permission without updating the allowlist and `PRIVACY_LABELS.md`; any `TODO`, `FIXME` or `UnimplementedError` in `lib/`.
 
 ## 22. Decisions, deferred features, cost, checklist
 
@@ -1328,7 +1328,7 @@ Sizes are estimates (S small, M medium, L large, XL a project of its own).
 
 - [x] Accounts table created; Flutter pinned; the contract block confirmed
 - [x] Seed commit pushed; Termux setup is optional (section 6.2)
-- [ ] Repository ruleset requiring `verify` on pull requests, with the Actions bypass (section 6.3)
+- [x] Repository ruleset requiring `verify` on pull requests, without bypass actors (section 6.3, D-50)
 - [x] Layering, exact pins and forbidden imports enforced by `ci_checks.sh`
 - [x] Bootstrap run; `android/` and `ios/` committed; `verify.yml` green on `batch/b0`
 - [ ] Design tokens frozen before any widget; additions recorded in DECISIONS
