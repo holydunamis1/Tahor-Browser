@@ -16,6 +16,9 @@ class AppPageRoute<T> extends PageRoute<T> {
   /// Width of the strip along the start edge that starts a back swipe.
   static const double edgeWidth = 24;
 
+  /// The route's own animation, so the edge swipe can drive it.
+  AnimationController? get dragController => controller;
+
   Motion get _motion {
     final BuildContext? context = navigator?.context;
     return context == null ? Motion.standard : Motion.of(context);
@@ -98,7 +101,7 @@ class _EdgeSwipeBackState<T> extends State<_EdgeSwipeBack<T>> {
         widget.route.isCurrent &&
         navigator.canPop() &&
         !navigator.userGestureInProgress &&
-        widget.route.controller != null;
+        widget.route.dragController != null;
   }
 
   double get _direction =>
@@ -118,7 +121,7 @@ class _EdgeSwipeBackState<T> extends State<_EdgeSwipeBack<T>> {
     }
     final double width = context.size?.width ?? 1;
     final double delta = (details.primaryDelta ?? 0) * _direction;
-    widget.route.controller!.value -= delta / width;
+    widget.route.dragController!.value -= delta / width;
   }
 
   void _end(DragEndDetails details) {
@@ -139,7 +142,7 @@ class _EdgeSwipeBackState<T> extends State<_EdgeSwipeBack<T>> {
   /// [pop] is null when the position alone decides.
   void _finish(bool? pop) {
     _tracking = false;
-    final AnimationController controller = widget.route.controller!;
+    final AnimationController controller = widget.route.dragController!;
     final NavigatorState navigator = widget.route.navigator!;
     final bool goBack = pop ?? controller.value < 0.5;
     if (goBack) {

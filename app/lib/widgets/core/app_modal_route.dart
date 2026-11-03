@@ -39,6 +39,9 @@ class AppModalRoute<T> extends PopupRoute<T> {
   static const double maxSheetWidth = 560;
   static const double maxDialogWidth = 420;
 
+  /// The route's own animation, so a drag can drive it.
+  AnimationController? get dragController => controller;
+
   Motion get _motion {
     final BuildContext? context = navigator?.context;
     return context == null ? Motion.standard : Motion.of(context);
@@ -140,7 +143,7 @@ class _SheetDragHandlerState<T> extends State<_SheetDragHandler<T>> {
   void _start(DragStartDetails details) {
     final NavigatorState? navigator = widget.route.navigator;
     if (navigator == null ||
-        widget.route.controller == null ||
+        widget.route.dragController == null ||
         navigator.userGestureInProgress) {
       return;
     }
@@ -153,7 +156,7 @@ class _SheetDragHandlerState<T> extends State<_SheetDragHandler<T>> {
       return;
     }
     final double height = context.size?.height ?? 1;
-    widget.route.controller!.value -= (details.primaryDelta ?? 0) / height;
+    widget.route.dragController!.value -= (details.primaryDelta ?? 0) / height;
   }
 
   void _end(DragEndDetails details) {
@@ -170,7 +173,7 @@ class _SheetDragHandlerState<T> extends State<_SheetDragHandler<T>> {
 
   void _finish(bool fling) {
     _tracking = false;
-    final AnimationController controller = widget.route.controller!;
+    final AnimationController controller = widget.route.dragController!;
     final NavigatorState navigator = widget.route.navigator!;
     if (fling || controller.value < 0.6) {
       navigator.pop();
