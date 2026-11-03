@@ -15,7 +15,10 @@ typedef PasteAndGoCallback = void Function(String text);
 /// one end, drawn in the accent colour.
 ///
 /// `EditableText` shows no selection handles unless it is given controls.
-class AppTextSelectionControls extends TextSelectionControls {
+/// The menu itself comes from the `contextMenuBuilder`, which `EditableText`
+/// only uses when the controls mix in [TextSelectionHandleControls].
+class AppTextSelectionControls extends TextSelectionControls
+    with TextSelectionHandleControls {
   AppTextSelectionControls();
 
   static const double _radius = 6;
@@ -58,18 +61,6 @@ class AppTextSelectionControls extends TextSelectionControls {
       ),
     );
   }
-
-  @override
-  Widget buildToolbar(
-    BuildContext context,
-    Rect globalEditableRegion,
-    double textLineHeight,
-    Offset selectionMidpoint,
-    List<TextSelectionPoint> endpoints,
-    TextSelectionDelegate delegate,
-    ValueListenable<ClipboardStatus>? clipboardStatus,
-    Offset? lastSecondaryTapDownPosition,
-  ) => const SizedBox.shrink();
 }
 
 class _HandlePainter extends CustomPainter {
