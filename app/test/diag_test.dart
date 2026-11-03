@@ -13,10 +13,12 @@ void main() {
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
       (MethodCall call) async {
-        if (call.method == 'Clipboard.getData')
+        if (call.method == 'Clipboard.getData') {
           return <String, Object?>{'text': clip};
-        if (call.method == 'Clipboard.hasStrings')
+        }
+        if (call.method == 'Clipboard.hasStrings') {
           return <String, Object?>{'value': true};
+        }
         return null;
       },
     );
