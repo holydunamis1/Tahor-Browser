@@ -179,33 +179,31 @@ class _PremiumTextFieldState extends State<PremiumTextField>
     final bool showClear =
         widget.showClearButton && widget.enabled && focused && !empty;
 
-    return Semantics(
-      container: true,
-      label: widget.semanticLabel ?? hint,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: IconSizes.minHitTarget),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.palette.bgSecondary,
-            borderRadius: theme.radii.inputRadius,
-            border: Border.all(
-              color: focused
-                  ? theme.palette.borderFocus
-                  : theme.palette.borderSubtle,
-              width: focused ? 2 : 1,
-            ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: IconSizes.minHitTarget),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.palette.bgSecondary,
+          borderRadius: theme.radii.inputRadius,
+          border: Border.all(
+            color: focused
+                ? theme.palette.borderFocus
+                : theme.palette.borderSubtle,
+            width: focused ? 2 : 1,
           ),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: Spacing.m,
-            ),
-            child: Row(
-              children: <Widget>[
-                if (widget.leading != null) ...<Widget>[
-                  widget.leading!,
-                  const SizedBox(width: Spacing.s),
-                ],
-                Expanded(
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: Spacing.m),
+          child: Row(
+            children: <Widget>[
+              if (widget.leading != null) ...<Widget>[
+                widget.leading!,
+                const SizedBox(width: Spacing.s),
+              ],
+              Expanded(
+                child: Semantics(
+                  container: true,
+                  label: widget.semanticLabel ?? hint,
                   child: Stack(
                     alignment: AlignmentDirectional.centerStart,
                     children: <Widget>[
@@ -227,20 +225,20 @@ class _PremiumTextFieldState extends State<PremiumTextField>
                     ],
                   ),
                 ),
-                if (showClear) ...<Widget>[
-                  const SizedBox(width: Spacing.s),
-                  _ClearButton(
-                    label: context.l10n.fieldClear,
-                    color: theme.palette.textTertiary,
-                    onTap: _clear,
-                  ),
-                ],
-                if (widget.trailing != null) ...<Widget>[
-                  const SizedBox(width: Spacing.s),
-                  widget.trailing!,
-                ],
+              ),
+              if (showClear) ...<Widget>[
+                const SizedBox(width: Spacing.s),
+                _ClearButton(
+                  label: context.l10n.fieldClear,
+                  color: theme.palette.textTertiary,
+                  onTap: _clear,
+                ),
               ],
-            ),
+              if (widget.trailing != null) ...<Widget>[
+                const SizedBox(width: Spacing.s),
+                widget.trailing!,
+              ],
+            ],
           ),
         ),
       ),
@@ -274,6 +272,7 @@ class _ClearButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       button: true,
       label: label,
       excludeSemantics: true,
