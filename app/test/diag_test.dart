@@ -37,18 +37,23 @@ void main() {
     final String before = '${c.selection}';
     await tester.longPress(find.byType(EditableText));
     await tester.pumpAndSettle();
-    final List<String> texts = tester
-        .widgetList<Text>(find.byType(Text, skipOffstage: false))
-        .map((Text t) => t.data ?? '?')
-        .toList();
     final EditableTextState state = tester.state<EditableTextState>(
       find.byType(EditableText),
     );
-    fail(
-      'before=$before after=${c.selection} texts=$texts '
-      'items=${state.contextMenuButtonItems.map((ContextMenuButtonItem i) => i.type.name).toList()} '
-      'toolbarShown=${state.showToolbar} focus=${state.widget.focusNode.hasFocus} '
-      'rect=${tester.getRect(find.byType(EditableText))} platform=${defaultTargetPlatform.name}',
-    );
+    List<String> texts() => tester
+        .widgetList<Text>(find.byType(Text, skipOffstage: false))
+        .map((Text t) => t.data ?? '?')
+        .toList();
+    final String afterLong =
+        'sel=${c.selection} texts=${texts()} '
+        'toolbarVisible=${state.selectionOverlay?.toolbarIsVisible} '
+        'handles=${state.selectionOverlay?.handlesVisible} '
+        'overlayNull=${state.selectionOverlay == null}';
+    final bool shown = state.showToolbar();
+    await tester.pumpAndSettle();
+    final String afterShow =
+        'shown=$shown texts=${texts()} '
+        'toolbarVisible=${state.selectionOverlay?.toolbarIsVisible}';
+    fail('LONG[$afterLong] SHOW[$afterShow] before=$before');
   });
 }
