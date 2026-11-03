@@ -14,7 +14,7 @@ rc=${PIPESTATUS[0]}
 if [ "$rc" -ne 0 ] || [ "${CI_SHOW:-0}" = "1" ]; then
   level="error"
   [ "$rc" -eq 0 ] && level="notice"
-  msg="$(tail -n 150 "$log" | python3 -c '
+  msg="$(tail -n 400 "$log" | python3 -c '
 import sys
 t = sys.stdin.read()[-60000:]
 print(t.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A"), end="")

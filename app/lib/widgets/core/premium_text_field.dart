@@ -180,6 +180,7 @@ class _PremiumTextFieldState extends State<PremiumTextField>
         widget.showClearButton && widget.enabled && focused && !empty;
 
     return Semantics(
+      container: true,
       label: widget.semanticLabel ?? hint,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: IconSizes.minHitTarget),

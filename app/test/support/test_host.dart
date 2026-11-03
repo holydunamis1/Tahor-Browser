@@ -15,16 +15,17 @@ Widget _frame({
   required TextDirection direction,
   required MediaQueryData media,
 }) {
-  return Directionality(
-    textDirection: direction,
-    child: MediaQuery(
-      data: media,
-      child: Localizations(
-        locale: const Locale('en'),
-        delegates: const <LocalizationsDelegate<dynamic>>[
-          AppLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
+  // Localizations sets its own text direction, so ours goes below it.
+  return MediaQuery(
+    data: media,
+    child: Localizations(
+      locale: const Locale('en'),
+      delegates: const <LocalizationsDelegate<dynamic>>[
+        AppLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
+      child: Directionality(
+        textDirection: direction,
         child: AppTheme(data: theme, child: child),
       ),
     ),
