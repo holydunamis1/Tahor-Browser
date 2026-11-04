@@ -72,15 +72,6 @@ class _HostOverlayState extends State<_HostOverlay> {
   }
 
   @override
-  void dispose() {
-    if (_entry.mounted) {
-      _entry.remove();
-    }
-    _entry.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) =>
       Overlay(initialEntries: <OverlayEntry>[_entry]);
 }
