@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/widgets/core/premium_text_field.dart';
@@ -35,24 +36,22 @@ void main() {
     final EditableTextState state = tester.state<EditableTextState>(
       find.byType(EditableText),
     );
-    final String before =
-        'toolbarTexts=${find.text('Paste').evaluate().length} '
-        'sel=${c.selection} focus=${state.widget.focusNode.hasFocus}';
-    final Offset target = tester.getCenter(find.text('Paste'));
-    await tester.tapAt(target);
-    final String t0 = c.text;
-    await tester.pump();
-    final String t1 = c.text;
-    await tester.pump(const Duration(milliseconds: 100));
-    final String t2 = c.text;
-    await tester.pumpAndSettle();
-    final String t3 = c.text;
-    final String after =
-        'toolbarTexts=${find.text('Paste').evaluate().length} '
-        'focus=${state.widget.focusNode.hasFocus} sel=${c.selection}';
+    final TextSelectionToolbarAnchors anchors = state.contextMenuAnchors;
+    final String layouts = find
+        .byType(CustomSingleChildLayout)
+        .evaluate()
+        .map(
+          (Element e) =>
+              '${(e.renderObject! as RenderBox).localToGlobal(Offset.zero)}'
+              '/${(e.renderObject! as RenderBox).size}',
+        )
+        .join(' | ');
     fail(
-      'BEFORE[$before] target=$target t0="$t0" t1="$t1" t2="$t2" t3="$t3" '
-      'AFTER[$after]',
+      'primary=${anchors.primaryAnchor} secondary=${anchors.secondaryAnchor} '
+      'paste=${tester.getRect(find.text('Paste'))} '
+      'field=${tester.getRect(find.byType(EditableText))} '
+      'overlays=${tester.getSize(find.byType(Overlay).first)} '
+      'layouts=[$layouts] media=${MediaQuery.of(tester.element(find.byType(EditableText))).size}',
     );
   });
 }
