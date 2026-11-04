@@ -256,6 +256,14 @@ class _FieldGestures extends TextSelectionGestureDetectorBuilder {
     super.onSingleTapUp(details);
     _state._requestKeyboard();
   }
+
+  @override
+  void onSingleLongTapStart(LongPressStartDetails details) {
+    // A long press on a field that is not focused focuses it first, so the
+    // selection exists before the menu acts on it.
+    _state._requestKeyboard();
+    super.onSingleLongTapStart(details);
+  }
 }
 
 class _ClearButton extends StatelessWidget {
