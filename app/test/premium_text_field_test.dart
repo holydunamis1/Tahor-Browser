@@ -192,7 +192,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Paste'));
     await tester.pumpAndSettle();
-    expect(controller.text, 'pasted text');
+    expect(
+      controller.text,
+      'pasted text',
+      reason: 'sel=${controller.selection} clip=$clipboard',
+    );
   });
 
   testWidgets('Paste and go hands the clipboard text to the callback', (
