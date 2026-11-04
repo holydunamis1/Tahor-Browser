@@ -272,6 +272,7 @@ class _MenuButtonState extends State<_MenuButton> {
               ),
               child: Center(
                 widthFactor: 1,
+                heightFactor: 1,
                 child: Text(
                   widget.action.label,
                   style: widget.theme.text.callout.copyWith(

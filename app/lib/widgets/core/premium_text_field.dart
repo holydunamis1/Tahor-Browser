@@ -208,13 +208,15 @@ class _PremiumTextFieldState extends State<PremiumTextField>
                     alignment: AlignmentDirectional.centerStart,
                     children: <Widget>[
                       if (hint != null && empty)
-                        IgnorePointer(
-                          child: Text(
-                            hint,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: base.copyWith(
-                              color: theme.palette.textTertiary,
+                        ExcludeSemantics(
+                          child: IgnorePointer(
+                            child: Text(
+                              hint,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: base.copyWith(
+                                color: theme.palette.textTertiary,
+                              ),
                             ),
                           ),
                         ),
