@@ -35,26 +35,24 @@ void main() {
     final EditableTextState state = tester.state<EditableTextState>(
       find.byType(EditableText),
     );
-    final String types = state.contextMenuButtonItems
-        .map((ContextMenuButtonItem i) => i.type.name)
-        .join(',');
-    final ContextMenuButtonItem paste = state.contextMenuButtonItems.firstWhere(
-      (ContextMenuButtonItem i) => i.type == ContextMenuButtonType.paste,
-    );
-    paste.onPressed!();
-    await tester.pumpAndSettle();
-    final String viaItem = c.text;
-    await state.pasteText(SelectionChangedCause.toolbar);
-    await tester.pumpAndSettle();
-    final String viaMethod = c.text;
-    await tester.runAsync(() async {
-      await state.pasteText(SelectionChangedCause.toolbar);
-    });
+    final String before =
+        'toolbarTexts=${find.text('Paste').evaluate().length} '
+        'sel=${c.selection} focus=${state.widget.focusNode.hasFocus}';
+    final Offset target = tester.getCenter(find.text('Paste'));
+    await tester.tapAt(target);
+    final String t0 = c.text;
     await tester.pump();
+    final String t1 = c.text;
+    await tester.pump(const Duration(milliseconds: 100));
+    final String t2 = c.text;
+    await tester.pumpAndSettle();
+    final String t3 = c.text;
+    final String after =
+        'toolbarTexts=${find.text('Paste').evaluate().length} '
+        'focus=${state.widget.focusNode.hasFocus} sel=${c.selection}';
     fail(
-      'types=$types viaItem="$viaItem" viaMethod="$viaMethod" '
-      'afterRunAsync="${c.text}" readOnly=${state.widget.readOnly} '
-      'sel=${c.selection} pasteEnabled=${state.pasteEnabled}',
+      'BEFORE[$before] target=$target t0="$t0" t1="$t1" t2="$t2" t3="$t3" '
+      'AFTER[$after]',
     );
   });
 }
