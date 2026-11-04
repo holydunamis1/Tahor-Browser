@@ -44,12 +44,45 @@ Widget testHost(
     theme: theme,
     direction: direction,
     media: media,
-    child: Overlay(
-      initialEntries: <OverlayEntry>[
-        OverlayEntry(builder: (BuildContext context) => child),
-      ],
-    ),
+    child: _HostOverlay(child: child),
   );
+}
+
+/// An overlay whose single entry follows the widget it is given, so a test
+/// can pump a changed widget and see the change (an [Overlay] reads its
+/// entries only once).
+class _HostOverlay extends StatefulWidget {
+  const _HostOverlay({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_HostOverlay> createState() => _HostOverlayState();
+}
+
+class _HostOverlayState extends State<_HostOverlay> {
+  late final OverlayEntry _entry = OverlayEntry(
+    builder: (BuildContext context) => widget.child,
+  );
+
+  @override
+  void didUpdateWidget(_HostOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _entry.markNeedsBuild();
+  }
+
+  @override
+  void dispose() {
+    if (_entry.mounted) {
+      _entry.remove();
+    }
+    _entry.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      Overlay(initialEntries: <OverlayEntry>[_entry]);
 }
 
 /// A navigator whose first page is built by [home], for route tests.
