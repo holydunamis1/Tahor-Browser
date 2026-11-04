@@ -184,6 +184,45 @@ void main() {
     expect(find.text('Select all'), findsOneWidget);
   });
 
+  testWidgets('the menu sits above the field and inside the screen', (
+    WidgetTester tester,
+  ) async {
+    mockClipboard(tester);
+    clipboard = 'x';
+    await tester.pumpWidget(field());
+    await tester.longPress(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    final Rect paste = tester.getRect(find.text('Paste'));
+    final Rect fieldRect = tester.getRect(find.byType(EditableText));
+    expect(paste.bottom, lessThanOrEqualTo(fieldRect.top));
+    expect(paste.top, greaterThanOrEqualTo(0));
+    expect(paste.left, greaterThanOrEqualTo(0));
+  });
+
+  testWidgets('the menu moves below a field at the top of the screen', (
+    WidgetTester tester,
+  ) async {
+    mockClipboard(tester);
+    clipboard = 'x';
+    await tester.pumpWidget(
+      testHost(
+        Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 300,
+            child: PremiumTextField(controller: controller),
+          ),
+        ),
+      ),
+    );
+    await tester.longPress(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    final Rect paste = tester.getRect(find.text('Paste'));
+    final Rect fieldRect = tester.getRect(find.byType(EditableText));
+    expect(paste.top, greaterThanOrEqualTo(fieldRect.bottom));
+    expect(paste.bottom, lessThanOrEqualTo(600));
+  });
+
   testWidgets('Paste inserts the clipboard text', (WidgetTester tester) async {
     mockClipboard(tester);
     clipboard = 'pasted text';
@@ -192,11 +231,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Paste'));
     await tester.pumpAndSettle();
-    expect(
-      controller.text,
-      'pasted text',
-      reason: 'sel=${controller.selection} clip=$clipboard',
-    );
+    expect(controller.text, 'pasted text');
   });
 
   testWidgets('Paste and go hands the clipboard text to the callback', (

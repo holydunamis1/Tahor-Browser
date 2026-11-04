@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -140,14 +142,63 @@ Widget appContextMenuBuilder(
   }
   final TextSelectionToolbarAnchors anchors = state.contextMenuAnchors;
   return CustomSingleChildLayout(
-    delegate: TextSelectionToolbarLayoutDelegate(
-      anchorAbove: anchors.primaryAnchor - const Offset(0, Spacing.s),
-      anchorBelow:
+    delegate: _MenuLayoutDelegate(
+      above: anchors.primaryAnchor - const Offset(0, Spacing.s),
+      below:
           (anchors.secondaryAnchor ?? anchors.primaryAnchor) +
           const Offset(0, Spacing.s),
+      screenPadding: MediaQuery.paddingOf(context),
     ),
     child: _Toolbar(actions: actions, theme: AppTheme.of(context)),
   );
+}
+
+/// Puts the menu centred above the selection when there is room, below it
+/// otherwise, and always inside the screen.
+class _MenuLayoutDelegate extends SingleChildLayoutDelegate {
+  const _MenuLayoutDelegate({
+    required this.above,
+    required this.below,
+    required this.screenPadding,
+  });
+
+  final Offset above;
+  final Offset below;
+  final EdgeInsets screenPadding;
+
+  static const double _edge = Spacing.s;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      constraints.loosen();
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final double minTop = screenPadding.top + _edge;
+    final double maxTop = math.max(
+      minTop,
+      size.height - childSize.height - screenPadding.bottom - _edge,
+    );
+    final bool fitsAbove = above.dy - childSize.height >= minTop;
+    final double top = (fitsAbove ? above.dy - childSize.height : below.dy)
+        .clamp(minTop, maxTop)
+        .toDouble();
+    final double minLeft = screenPadding.left + _edge;
+    final double maxLeft = math.max(
+      minLeft,
+      size.width - childSize.width - screenPadding.right - _edge,
+    );
+    final double left = (above.dx - childSize.width / 2)
+        .clamp(minLeft, maxLeft)
+        .toDouble();
+    return Offset(left, top);
+  }
+
+  @override
+  bool shouldRelayout(_MenuLayoutDelegate old) =>
+      above != old.above ||
+      below != old.below ||
+      screenPadding != old.screenPadding;
 }
 
 class _Toolbar extends StatelessWidget {
