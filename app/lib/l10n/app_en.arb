@@ -88,5 +88,33 @@
   "errorUnexpected": "An unexpected problem occurred.",
   "@errorUnexpected": {
     "description": "Generic message for an unclassified error."
+  },
+  "menuCut": "Cut",
+  "@menuCut": {
+    "description": "Text selection menu: remove the selected text and copy it."
+  },
+  "menuCopy": "Copy",
+  "@menuCopy": {
+    "description": "Text selection menu: copy the selected text."
+  },
+  "menuPaste": "Paste",
+  "@menuPaste": {
+    "description": "Text selection menu: insert the copied text."
+  },
+  "menuSelectAll": "Select all",
+  "@menuSelectAll": {
+    "description": "Text selection menu: select all the text in the field."
+  },
+  "menuPasteAndGo": "Paste and go",
+  "@menuPasteAndGo": {
+    "description": "Address bar selection menu: paste the copied text and open it."
+  },
+  "fieldClear": "Clear",
+  "@fieldClear": {
+    "description": "Accessibility label of the button that empties a text field."
+  },
+  "dismiss": "Dismiss",
+  "@dismiss": {
+    "description": "Accessibility label of the area behind a sheet or dialog that closes it."
   }
 }

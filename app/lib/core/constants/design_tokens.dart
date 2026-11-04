@@ -22,6 +22,7 @@ class AppPalette {
     required this.error,
     required this.success,
     required this.warning,
+    required this.scrim,
   });
 
   /// Page background.
@@ -56,6 +57,9 @@ class AppPalette {
   final Color success;
   final Color warning;
 
+  /// The dimming layer behind sheets and dialogs.
+  final Color scrim;
+
   /// The light palette: clean white surfaces, a deep teal accent.
   static const AppPalette light = AppPalette(
     bgPrimary: Color(0xFFFFFFFF),
@@ -72,6 +76,7 @@ class AppPalette {
     error: Color(0xFFC42B2B),
     success: Color(0xFF1B7A38),
     warning: Color(0xFF8A5600),
+    scrim: Color(0x59000000),
   );
 
   /// The dark palette: true black for OLED, a lighter teal accent.
@@ -90,5 +95,6 @@ class AppPalette {
     error: Color(0xFFFF7A72),
     success: Color(0xFF55D483),
     warning: Color(0xFFFFC656),
+    scrim: Color(0x99000000),
   );
 }
