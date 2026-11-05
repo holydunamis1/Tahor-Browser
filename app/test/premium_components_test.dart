@@ -66,33 +66,28 @@ void main() {
     testWidgets('direction-aware glyphs flip in right-to-left', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(
-        host(const AppIcon(AppIcons.back), direction: TextDirection.rtl),
+      Future<int> count(Widget icon, TextDirection d) async {
+        await tester.pumpWidget(host(icon, direction: d));
+        return find
+            .descendant(
+              of: find.byType(AppIcon),
+              matching: find.byType(Transform),
+            )
+            .evaluate()
+            .length;
+      }
+
+      final int plain = await count(
+        const AppIcon(AppIcons.close),
+        TextDirection.rtl,
       );
       expect(
-        find.descendant(
-          of: find.byType(AppIcon),
-          matching: find.byType(Transform),
-        ),
-        findsOneWidget,
-      );
-      await tester.pumpWidget(
-        host(const AppIcon(AppIcons.close), direction: TextDirection.rtl),
+        await count(const AppIcon(AppIcons.back), TextDirection.rtl),
+        plain + 1,
       );
       expect(
-        find.descendant(
-          of: find.byType(AppIcon),
-          matching: find.byType(Transform),
-        ),
-        findsNothing,
-      );
-      await tester.pumpWidget(host(const AppIcon(AppIcons.back)));
-      expect(
-        find.descendant(
-          of: find.byType(AppIcon),
-          matching: find.byType(Transform),
-        ),
-        findsNothing,
+        await count(const AppIcon(AppIcons.back), TextDirection.ltr),
+        plain,
       );
     });
   });
