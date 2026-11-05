@@ -301,14 +301,11 @@ void main() {
       expect(find.text('Bookmarks'), findsOneWidget);
       expect(find.text('12 saved'), findsOneWidget);
       Color? tint() =>
-          tester
-                  .widget<AnimatedContainer>(find.byType(AnimatedContainer))
-                  .decoration ==
-              null
-          ? (tester
-                .widget<AnimatedContainer>(find.byType(AnimatedContainer))
-                .color)
-          : null;
+          (tester
+                      .widget<AnimatedContainer>(find.byType(AnimatedContainer))
+                      .decoration!
+                  as BoxDecoration)
+              .color;
       expect(tint(), const Color(0x00000000));
       final TestGesture g = await tester.startGesture(
         tester.getCenter(find.byType(PremiumRow)),
