@@ -114,7 +114,7 @@ Widget componentSheet() {
           subtitle: 'History is off by default.',
         ),
         SizedBox(
-          height: 340,
+          height: 560,
           child: ErrorState(
             error: const NetworkError.offline(),
             onRetry: () {},
