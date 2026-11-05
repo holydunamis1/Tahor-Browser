@@ -1,0 +1,57 @@
+name: update-goldens
+
+# Manual. Regenerates the golden images on the CI runner (pictures made on a
+# phone or another system would differ) and pushes them to the selected
+# batch branch. Refuses to run on main.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.ref_name != 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the Flutter version pin
+        id: fv
+        run: echo "version=$(tr -d '[:space:]' < tool/flutter_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ steps.fv.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: app
+        run: bash ../tool/ci_run.sh pub-get flutter pub get
+
+      - name: Generate localizations
+        working-directory: app
+        run: bash ../tool/ci_run.sh gen-l10n flutter gen-l10n
+
+      - name: Regenerate the goldens
+        working-directory: app
+        run: |
+          tests="$(find test -name '*_golden_test.dart' | sort | tr '\n' ' ')"
+          # shellcheck disable=SC2086
+          bash ../tool/ci_run.sh update-goldens flutter test --update-goldens --reporter failures-only $tests
+
+      - name: Commit the images to the branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/test/goldens
+          if git diff --cached --quiet; then
+            echo "The goldens are already up to date."
+          else
+            git commit -m "goldens: regenerate on the CI runner"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
