@@ -77,17 +77,24 @@ void main() {
             .length;
       }
 
-      final int plain = await count(
+      // The icon widget adds a transform of its own in right-to-left, so the
+      // mirrored glyph is compared with an unmirrored one in the same
+      // direction.
+      final int plainRtl = await count(
         const AppIcon(AppIcons.close),
         TextDirection.rtl,
       );
       expect(
         await count(const AppIcon(AppIcons.back), TextDirection.rtl),
-        plain + 1,
+        plainRtl + 1,
+      );
+      final int plainLtr = await count(
+        const AppIcon(AppIcons.close),
+        TextDirection.ltr,
       );
       expect(
         await count(const AppIcon(AppIcons.back), TextDirection.ltr),
-        plain,
+        plainLtr,
       );
     });
   });
@@ -420,10 +427,12 @@ void main() {
         host(
           SizedBox(
             width: 300,
-            child: PrimaryButton(
-              label: 'OK',
-              expanded: false,
-              onPressed: () {},
+            child: Align(
+              child: PrimaryButton(
+                label: 'OK',
+                expanded: false,
+                onPressed: () {},
+              ),
             ),
           ),
         ),
