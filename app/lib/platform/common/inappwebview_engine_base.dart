@@ -47,12 +47,13 @@ NavigationRequest requestFor(String tabId, NavigationAction action) {
 /// The platform engines only adjust settings.
 abstract class InAppWebViewEngineBase implements BrowserEngine {
   InAppWebViewEngineBase({
-    required ExternalLauncher launcher,
+    required this.launcher,
     bool safeBrowsingEnabled = true,
-  }) : _launcher = launcher,
-       _safeBrowsing = safeBrowsingEnabled;
+  }) : _safeBrowsing = safeBrowsingEnabled;
 
-  final ExternalLauncher _launcher;
+  /// Opens addresses the policy sends to other apps.
+  @protected
+  final ExternalLauncher launcher;
   final bool _safeBrowsing;
   final Map<String, InAppWebViewController> _controllers =
       <String, InAppWebViewController>{};
@@ -132,7 +133,7 @@ abstract class InAppWebViewEngineBase implements BrowserEngine {
   }
 
   Future<void> _openExternally(String tabId, Uri uri) async {
-    final bool opened = await _launcher.openExternalApp(uri);
+    final bool opened = await launcher.openExternalApp(uri);
     if (opened || uri.scheme != 'intent') {
       return;
     }
