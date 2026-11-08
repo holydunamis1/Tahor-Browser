@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/widgets.dart';
 import 'package:tahorbrowser/core/contracts/browser_engine.dart';
 import 'package:tahorbrowser/core/contracts/key_value_store.dart';
@@ -37,12 +39,21 @@ class FakeKeyValueStore implements KeyValueStore {
   @override
   Future<Map<String, Object?>?> getJson(String key) async {
     final Object? value = data[key];
-    return value is Map<String, Object?> ? value : null;
+    if (value is! String) {
+      return null;
+    }
+    try {
+      final Object? decoded = jsonDecode(value);
+      return decoded is Map<String, Object?> ? decoded : null;
+    } on FormatException {
+      return null;
+    }
   }
 
+  /// Like the real store, JSON is kept as text.
   @override
   Future<void> setJson(String key, Map<String, Object?> value) async =>
-      data[key] = value;
+      data[key] = jsonEncode(value);
 
   @override
   Future<void> remove(String key) async => data.remove(key);
