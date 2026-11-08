@@ -103,12 +103,10 @@ typedef TabIdGenerator = String Function();
 /// There is always at least one tab.
 class TabsProvider extends ValueNotifier<TabsState> {
   TabsProvider({
-    required BrowserEngine engine,
-    required SearchEngine Function() searchEngine,
+    required this._engine,
+    required this._searchEngine,
     TabIdGenerator? idGenerator,
-  }) : _engine = engine,
-       _searchEngine = searchEngine,
-       _newId = idGenerator ?? _sequentialIds(),
+  }) : _newId = idGenerator ?? _sequentialIds(),
        super(const TabsState(tabs: <TabModel>[], activeIndex: 0)) {
     value = TabsState(tabs: <TabModel>[TabModel(id: _newId())], activeIndex: 0);
   }

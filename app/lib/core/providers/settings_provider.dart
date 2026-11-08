@@ -7,10 +7,9 @@ import '../services/settings_service.dart';
 /// the background.
 class SettingsProvider extends ValueNotifier<AppSettings> {
   SettingsProvider({
-    required SettingsService service,
+    required this._service,
     AppSettings initial = const AppSettings(),
-  }) : _service = service,
-       super(initial);
+  }) : super(initial);
 
   final SettingsService _service;
   Future<void> _saving = Future<void>.value();
