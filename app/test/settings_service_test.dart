@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/core/models/app_settings.dart';
 import 'package:tahorbrowser/core/services/settings_service.dart';
@@ -35,11 +37,11 @@ void main() {
     'a value saved by a newer app still loads what it understands',
     () async {
       final FakeKeyValueStore store = FakeKeyValueStore(<String, Object>{
-        SettingsService.storageKey: <String, Object?>{
+        SettingsService.storageKey: jsonEncode(<String, Object?>{
           'v': 99,
           'themeMode': 'light',
           'fromTheFuture': true,
-        },
+        }),
       });
       final AppSettings s = await SettingsService(store).load();
       expect(s.themeMode, AppThemeMode.light);
