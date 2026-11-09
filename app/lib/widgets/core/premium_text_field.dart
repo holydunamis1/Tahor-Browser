@@ -33,6 +33,8 @@ class PremiumTextField extends StatefulWidget {
     this.selectAllOnFocus = false,
     this.contextMenuBuilder,
     this.style,
+    this.autocorrect = true,
+    this.borderRadius,
   });
 
   final TextEditingController controller;
@@ -60,6 +62,12 @@ class PremiumTextField extends StatefulWidget {
   /// Defaults to the Cut, Copy, Paste and Select all menu.
   final EditableTextContextMenuBuilder? contextMenuBuilder;
   final TextStyle? style;
+
+  /// Autocorrect and suggestions; off for addresses. Always off for passwords.
+  final bool autocorrect;
+
+  /// Defaults to the input radius.
+  final BorderRadius? borderRadius;
 
   @override
   State<PremiumTextField> createState() => _PremiumTextFieldState();
@@ -165,8 +173,8 @@ class _PremiumTextFieldState extends State<PremiumTextField>
       onSubmitted: widget.onSubmitted,
       onChanged: widget.onChanged,
       obscureText: widget.obscureText,
-      autocorrect: !widget.obscureText,
-      enableSuggestions: !widget.obscureText,
+      autocorrect: widget.autocorrect && !widget.obscureText,
+      enableSuggestions: widget.autocorrect && !widget.obscureText,
       autofocus: widget.autofocus,
       readOnly: !widget.enabled,
       maxLines: 1,
@@ -184,7 +192,7 @@ class _PremiumTextFieldState extends State<PremiumTextField>
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.palette.bgSecondary,
-          borderRadius: theme.radii.inputRadius,
+          borderRadius: widget.borderRadius ?? theme.radii.inputRadius,
           border: Border.all(
             color: focused
                 ? theme.palette.borderFocus

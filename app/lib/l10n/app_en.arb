@@ -116,5 +116,73 @@
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Accessibility label of the area behind a sheet or dialog that closes it."
+  },
+  "addressBarHint": "Search or enter address",
+  "@addressBarHint": {
+    "description": "Placeholder of the address bar when it is empty."
+  },
+  "addressBarLabel": "Address or search",
+  "@addressBarLabel": {
+    "description": "Accessibility label of the address bar."
+  },
+  "addressNotSecure": "Not secure",
+  "@addressNotSecure": {
+    "description": "Shown in the address bar for pages loaded over plain HTTP."
+  },
+  "navBack": "Back",
+  "@navBack": {
+    "description": "Accessibility label of the Back button."
+  },
+  "navForward": "Forward",
+  "@navForward": {
+    "description": "Accessibility label of the Forward button."
+  },
+  "navReload": "Reload",
+  "@navReload": {
+    "description": "Accessibility label of the Reload button."
+  },
+  "navStop": "Stop",
+  "@navStop": {
+    "description": "Accessibility label of the Stop button, shown while a page loads."
+  },
+  "navMenu": "Menu",
+  "@navMenu": {
+    "description": "Accessibility label of the button that opens the browser menu."
+  },
+  "menuReload": "Reload",
+  "@menuReload": {
+    "description": "Browser menu item: load the page again."
+  },
+  "menuStop": "Stop",
+  "@menuStop": {
+    "description": "Browser menu item: stop loading the page."
+  },
+  "menuShare": "Share",
+  "@menuShare": {
+    "description": "Browser menu item: share the page address."
+  },
+  "menuOpenInBrowser": "Open in system browser",
+  "@menuOpenInBrowser": {
+    "description": "Browser menu item: open the page in the phone's own browser."
+  },
+  "menuSettings": "Settings",
+  "@menuSettings": {
+    "description": "Browser menu item: open the settings."
+  },
+  "menuGroupThisPage": "This page",
+  "@menuGroupThisPage": {
+    "description": "Browser menu section title for actions on the current page."
+  },
+  "menuGroupTabs": "Tabs",
+  "@menuGroupTabs": {
+    "description": "Browser menu section title for tab actions."
+  },
+  "menuGroupLibrary": "Library",
+  "@menuGroupLibrary": {
+    "description": "Browser menu section title for bookmarks, history and downloads."
+  },
+  "menuGroupApp": "App",
+  "@menuGroupApp": {
+    "description": "Browser menu section title for app-level actions."
   }
 }
