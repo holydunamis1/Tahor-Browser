@@ -307,7 +307,8 @@ void main() {
           );
           await tester.tap(find.text('Alpha'));
           await tester.pumpAndSettle();
-          expect(find.text('Letter'), findsOneWidget);
+          // The tile's own title and the sheet's title.
+          expect(find.text('Letter'), findsNWidgets(2));
           expect(
             find.byKey(const ValueKey<String>('choice-Alpha')),
             findsOneWidget,
