@@ -53,61 +53,66 @@ class PremiumCard extends StatelessWidget {
             horizontal: Spacing.m,
             vertical: Spacing.s,
           ),
-          child: Row(
-            children: <Widget>[
-              if (leading != null) ...<Widget>[
-                SizedBox.square(
-                  dimension: IconSizes.chipContainer,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: theme.palette.accentDim,
-                      borderRadius: theme.radii.chipRadius,
-                    ),
-                    child: Center(
-                      child: AppIcon(
-                        leading!,
-                        role: AppIconRole.rowLeading,
-                        color: theme.palette.accent,
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints box) => Row(
+              children: <Widget>[
+                if (leading != null) ...<Widget>[
+                  SizedBox.square(
+                    dimension: IconSizes.chipContainer,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: theme.palette.accentDim,
+                        borderRadius: theme.radii.chipRadius,
+                      ),
+                      child: Center(
+                        child: AppIcon(
+                          leading!,
+                          role: AppIconRole.rowLeading,
+                          color: theme.palette.accent,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: Spacing.m),
-              ],
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      label,
-                      style: theme.text.title2.copyWith(
-                        color: theme.palette.textPrimary,
-                      ),
-                    ),
-                    if (value != null)
+                  const SizedBox(width: Spacing.m),
+                ],
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
                       Text(
-                        value!,
-                        style: theme.text.footnote.copyWith(
-                          color: theme.palette.textSecondary,
+                        label,
+                        style: theme.text.title2.copyWith(
+                          color: theme.palette.textPrimary,
                         ),
                       ),
-                  ],
+                      if (value != null)
+                        Text(
+                          value!,
+                          style: theme.text.footnote.copyWith(
+                            color: theme.palette.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              if (trailing != null) ...<Widget>[
-                const SizedBox(width: Spacing.s),
-                trailing!,
+                if (trailing != null) ...<Widget>[
+                  const SizedBox(width: Spacing.s),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: box.maxWidth * 0.5),
+                    child: trailing!,
+                  ),
+                ],
+                if (chevron) ...<Widget>[
+                  const SizedBox(width: Spacing.s),
+                  AppIcon(
+                    AppIcons.chevron,
+                    role: AppIconRole.rowTrailing,
+                    color: theme.palette.textTertiary,
+                  ),
+                ],
               ],
-              if (chevron) ...<Widget>[
-                const SizedBox(width: Spacing.s),
-                AppIcon(
-                  AppIcons.chevron,
-                  role: AppIconRole.rowTrailing,
-                  color: theme.palette.textTertiary,
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),
