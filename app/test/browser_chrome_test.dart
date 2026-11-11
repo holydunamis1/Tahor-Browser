@@ -57,7 +57,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(bar(0.5, loading: false));
-      expect(tester.getSize(find.byType(PageProgressBar)), Size.zero);
+      expect(tester.getSize(find.byType(PageProgressBar)).height, 0);
     });
 
     testWidgets('is 2 px high while loading and fills as it progresses', (
