@@ -77,59 +77,64 @@ class _PremiumRowState extends State<PremiumRow> {
             horizontal: Spacing.m,
             vertical: Spacing.s,
           ),
-          child: Row(
-            children: <Widget>[
-              if (widget.leading != null) ...<Widget>[
-                SizedBox.square(
-                  dimension: IconSizes.chipContainer,
-                  child: Center(
-                    child: AppIcon(
-                      widget.leading!,
-                      role: AppIconRole.rowLeading,
-                      color: theme.palette.textSecondary,
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints box) => Row(
+              children: <Widget>[
+                if (widget.leading != null) ...<Widget>[
+                  SizedBox.square(
+                    dimension: IconSizes.chipContainer,
+                    child: Center(
+                      child: AppIcon(
+                        widget.leading!,
+                        role: AppIconRole.rowLeading,
+                        color: theme.palette.textSecondary,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: Spacing.s),
-              ],
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      widget.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.text.callout.copyWith(
-                        color: theme.palette.textPrimary,
-                      ),
-                    ),
-                    if (widget.subtitle != null)
+                  const SizedBox(width: Spacing.s),
+                ],
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
                       Text(
-                        widget.subtitle!,
-                        maxLines: 1,
+                        widget.title,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.text.footnote.copyWith(
-                          color: theme.palette.textSecondary,
+                        style: theme.text.callout.copyWith(
+                          color: theme.palette.textPrimary,
                         ),
                       ),
-                  ],
+                      if (widget.subtitle != null)
+                        Text(
+                          widget.subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.text.footnote.copyWith(
+                            color: theme.palette.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              if (widget.trailing != null) ...<Widget>[
-                const SizedBox(width: Spacing.s),
-                widget.trailing!,
+                if (widget.trailing != null) ...<Widget>[
+                  const SizedBox(width: Spacing.s),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: box.maxWidth * 0.5),
+                    child: widget.trailing!,
+                  ),
+                ],
+                if (chevron) ...<Widget>[
+                  const SizedBox(width: Spacing.s),
+                  AppIcon(
+                    AppIcons.chevron,
+                    role: AppIconRole.rowTrailing,
+                    color: theme.palette.textTertiary,
+                  ),
+                ],
               ],
-              if (chevron) ...<Widget>[
-                const SizedBox(width: Spacing.s),
-                AppIcon(
-                  AppIcons.chevron,
-                  role: AppIconRole.rowTrailing,
-                  color: theme.palette.textTertiary,
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

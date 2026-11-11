@@ -10,6 +10,8 @@ import 'package:tahorbrowser/widgets/icons/semantic_icons.dart';
 import 'support/test_host.dart';
 
 void main() {
+  longTrailingTests();
+
   Widget host(Widget child) =>
       testHost(Center(child: SizedBox(width: 320, child: child)));
 
@@ -129,4 +131,49 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+}
+
+void longTrailingTests() {
+  testWidgets(
+    'a long trailing value is shortened, never overflowing, at 2x text',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        testHost(
+          Center(
+            child: SizedBox(
+              width: 360,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  PremiumRow(
+                    title: 'Search engine',
+                    onTap: () {},
+                    trailing: const Text(
+                      'A very long search engine name',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  PremiumCard(
+                    label: 'Search engine',
+                    onTap: () {},
+                    trailing: const Text(
+                      'A very long search engine name',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          media: const MediaQueryData(
+            size: Size(800, 600),
+            textScaler: TextScaler.linear(2),
+          ),
+        ),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
