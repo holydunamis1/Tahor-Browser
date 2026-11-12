@@ -184,5 +184,37 @@
   "menuGroupApp": "App",
   "@menuGroupApp": {
     "description": "Browser menu section title for app-level actions."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title of the settings screen."
+  },
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {
+    "description": "Settings section title for how the app looks."
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Settings row: choose light, dark or the phone's setting."
+  },
+  "themeSystem": "System default",
+  "@themeSystem": {
+    "description": "Theme choice: follow the phone's light or dark setting."
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Theme choice: always light."
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Theme choice: always dark."
+  },
+  "settingsSearch": "Search",
+  "@settingsSearch": {
+    "description": "Settings section title for search options."
+  },
+  "settingsSearchEngine": "Search engine",
+  "@settingsSearchEngine": {
+    "description": "Settings row: choose the search engine used by the address bar."
   }
 }
