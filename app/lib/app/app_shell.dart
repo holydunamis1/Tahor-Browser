@@ -26,6 +26,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   Key _rootKey = UniqueKey();
   bool _errorWidgetInstalled = false;
+  ErrorWidgetBuilder? _previousErrorWidget;
 
   @override
   void didChangeDependencies() {
@@ -34,6 +35,7 @@ class _AppShellState extends State<AppShell> {
       return;
     }
     _errorWidgetInstalled = true;
+    _previousErrorWidget = ErrorWidget.builder;
     final AppDependencies deps = AppScope.of(context);
     installErrorWidget(
       // Retry rebuilds everything below the root key.
@@ -42,6 +44,16 @@ class _AppShellState extends State<AppShell> {
         deps.launcher.openExternalApp(GlobalErrorView.reportUri(code)),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Give the framework its own error screen back when the app goes away.
+    final ErrorWidgetBuilder? previous = _previousErrorWidget;
+    if (previous != null) {
+      ErrorWidget.builder = previous;
+    }
+    super.dispose();
   }
 
   @override

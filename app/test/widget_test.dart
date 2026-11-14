@@ -12,7 +12,7 @@ void main() {
   AppTheme currentTheme(WidgetTester tester) =>
       tester.widget<AppTheme>(find.byType(AppTheme).first);
 
-  testWidgets('the app boots with its address bar and navigation bar', (
+  appTest('the app boots with its address bar and navigation bar', (
     WidgetTester tester,
   ) async {
     await TestApp.pump(tester);
@@ -22,7 +22,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the theme follows the phone until the person chooses', (
+  appTest('the theme follows the phone until the person chooses', (
     WidgetTester tester,
   ) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
@@ -44,9 +44,7 @@ void main() {
     expect(currentTheme(tester).data.palette, AppPalette.light);
   });
 
-  testWidgets('the theme toggle changes the theme', (
-    WidgetTester tester,
-  ) async {
+  appTest('the theme toggle changes the theme', (WidgetTester tester) async {
     final TestApp app = await TestApp.pump(tester);
     final bool before = currentTheme(tester).data.isDark;
     await app.deps.settings.setThemeMode(
@@ -56,7 +54,7 @@ void main() {
     expect(currentTheme(tester).data.isDark, isNot(before));
   });
 
-  testWidgets('text never shows the framework fallback style', (
+  appTest('text never shows the framework fallback style', (
     WidgetTester tester,
   ) async {
     await TestApp.pump(tester);

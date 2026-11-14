@@ -21,7 +21,7 @@ void main() {
   }
 
   group('opening pages', () {
-    testWidgets(
+    appTest(
       'a typed address opens in the showing tab and builds its web view',
       (WidgetTester tester) async {
         final TestApp app = await TestApp.pump(tester);
@@ -39,7 +39,7 @@ void main() {
       },
     );
 
-    testWidgets('typed words become a search with the chosen engine', (
+    appTest('typed words become a search with the chosen engine', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -50,13 +50,13 @@ void main() {
       );
     });
 
-    testWidgets('a refused address does nothing', (WidgetTester tester) async {
+    appTest('a refused address does nothing', (WidgetTester tester) async {
       final TestApp app = await TestApp.pump(tester);
       await submit(tester, 'javascript:alert(1)');
       expect(app.deps.tabs.activeTab.isBlank, isTrue);
     });
 
-    testWidgets('the engine got the app navigation policy', (
+    appTest('the engine got the app navigation policy', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -72,7 +72,7 @@ void main() {
   });
 
   group('page state', () {
-    testWidgets('loading shows the progress bar and a Stop button', (
+    appTest('loading shows the progress bar and a Stop button', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -94,7 +94,7 @@ void main() {
       expect(chip('Reload'), findsOneWidget);
     });
 
-    testWidgets('Back and Forward follow the page history', (
+    appTest('Back and Forward follow the page history', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -115,9 +115,7 @@ void main() {
       ]);
     });
 
-    testWidgets('the address bar shows the page host', (
-      WidgetTester tester,
-    ) async {
+    appTest('the address bar shows the page host', (WidgetTester tester) async {
       final TestApp app = await TestApp.pump(tester);
       await submit(tester, 'example.com');
       final String id = app.deps.tabs.activeTab.id;
@@ -133,7 +131,7 @@ void main() {
   });
 
   group('errors', () {
-    testWidgets(
+    appTest(
       'a failed load shows the error with Try again, and a new load clears it',
       (WidgetTester tester) async {
         final TestApp app = await TestApp.pump(tester);
@@ -154,7 +152,7 @@ void main() {
       },
     );
 
-    testWidgets('an error in a sub-frame shows nothing', (
+    appTest('an error in a sub-frame shows nothing', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -169,7 +167,7 @@ void main() {
   });
 
   group('the Back button', () {
-    testWidgets('goes back in the page when there is history', (
+    appTest('goes back in the page when there is history', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -184,7 +182,7 @@ void main() {
       expect(app.engine.calls, contains('back $id'));
     });
 
-    testWidgets('leaves the app when there is no history', (
+    appTest('leaves the app when there is no history', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -199,9 +197,7 @@ void main() {
   });
 
   group('the menu', () {
-    testWidgets('a blank tab offers only Settings', (
-      WidgetTester tester,
-    ) async {
+    appTest('a blank tab offers only Settings', (WidgetTester tester) async {
       await TestApp.pump(tester);
       await tester.tap(chip('Menu'));
       await tester.pumpAndSettle();
@@ -210,7 +206,7 @@ void main() {
       expect(find.text('Open in system browser'), findsNothing);
     });
 
-    testWidgets('a page adds Reload, Share and Open in system browser', (
+    appTest('a page adds Reload, Share and Open in system browser', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -228,7 +224,7 @@ void main() {
       ]);
     });
 
-    testWidgets('Share hands the address and title to the share sheet', (
+    appTest('Share hands the address and title to the share sheet', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
@@ -244,7 +240,7 @@ void main() {
       ]);
     });
 
-    testWidgets('Reload reloads the page', (WidgetTester tester) async {
+    appTest('Reload reloads the page', (WidgetTester tester) async {
       final TestApp app = await TestApp.pump(tester);
       await submit(tester, 'example.com');
       await tester.tap(chip('Menu'));
@@ -256,9 +252,7 @@ void main() {
       ]);
     });
 
-    testWidgets('while loading the menu offers Stop', (
-      WidgetTester tester,
-    ) async {
+    appTest('while loading the menu offers Stop', (WidgetTester tester) async {
       final TestApp app = await TestApp.pump(tester);
       await submit(tester, 'example.com');
       app.engine.lastSink!(
@@ -275,7 +269,7 @@ void main() {
     });
   });
 
-  testWidgets('an open keyboard takes the navigation bar out of the layout', (
+  appTest('an open keyboard takes the navigation bar out of the layout', (
     WidgetTester tester,
   ) async {
     await TestApp.pump(tester);
@@ -287,7 +281,7 @@ void main() {
     expect(find.byType(AddressBar), findsOneWidget);
   });
 
-  testWidgets('chrome stays in place while only the page area changes', (
+  appTest('chrome stays in place while only the page area changes', (
     WidgetTester tester,
   ) async {
     final TestApp app = await TestApp.pump(tester);

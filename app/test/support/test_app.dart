@@ -25,9 +25,6 @@ class TestApp {
     WidgetTester tester, {
     FakeKeyValueStore? store,
   }) async {
-    final ErrorWidgetBuilder originalErrorWidget = ErrorWidget.builder;
-    addTearDown(() => ErrorWidget.builder = originalErrorWidget);
-
     final FakeBrowserEngine engine = FakeBrowserEngine();
     final FakeLauncher launcher = FakeLauncher();
     final FakeShare share = FakeShare();
@@ -49,4 +46,20 @@ class TestApp {
     await tester.pumpAndSettle();
     return app;
   }
+}
+
+/// A widget test for the whole app. The app is unmounted at the end, which
+/// gives back the global error screen the shell replaced; Flutter checks that
+/// before teardown callbacks run.
+void appTest(
+  String description,
+  Future<void> Function(WidgetTester tester) body,
+) {
+  testWidgets(description, (WidgetTester tester) async {
+    try {
+      await body(tester);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
 }
