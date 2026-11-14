@@ -68,9 +68,7 @@ void main() {
       isTrue,
     );
     expect(find.text('Dark'), findsOneWidget);
-    final AppSettings saved = await tester.runAsync(
-      () => SettingsService(app.store).load(),
-    ) as AppSettings;
+    final AppSettings saved = await savedSettings(tester, app.store);
     expect(saved.themeMode, AppThemeMode.dark);
   });
 
