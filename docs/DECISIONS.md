@@ -64,6 +64,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-56 | URL policy rules (B6): web pages and blank pages load; a link to another app (phone, mail, SMS, store, an app's own scheme, `intent:`) opens it only when the person tapped, and a page cannot launch an app on its own; `javascript`, `file`, `content`, `filesystem`, `view-source` and `ftp` are blocked; `data:` may be used in frames but not as the page itself; `blob:` loads | Stops redirects and ads from launching apps, and the phishing and local-file tricks | 
 | D-57 | `TabsProvider` holds live per-tab state (progress, loading, back and forward availability, last error) beside the saved tab model, so the saved model stays small and complete; a blank tab gets its web view when the first address is set on it; new tabs are added at the end | Keeps what is saved separate from what is only true while a page loads |
 | D-58 | B8 structure: `AppDependencies` and `AppScope` live in `core/` and hold only contracts and providers, so screens never see platform code (the layering check refused the first version, which kept them in `app/`); screen names are constants in `core/constants/route_names.dart` so a screen can push a route without importing the router; `ScreenNavBar` (back chip, title, actions) is a shared widget added in this batch; the first route appears without a transition and all later ones use the app transition; a blank tab shows the app name until the start page arrives in B12 | Keeps the layering rule true in practice and gives every screen one top bar |
+| D-59 | `SettingsProvider` starts each save chain from a future created in the caller's zone, not from a field initialised at construction | A completed future made in one zone and chained from another (the app was built inside `runAsync`, the test in fake-async) made saves depend on event-loop timing, which gave tests that passed or hung at random | B8 |
 
 ## Verified pins
 
@@ -101,4 +102,3 @@ All direct dependencies in `app/pubspec.yaml` resolve together on Flutter 3.47.7
 ## Milestone log
 
 An entry is appended at each milestone exit with the date, the build used, the phone checklist result and the integration run.
-| D-59 | `SettingsProvider` starts each save chain from a future created in the caller's zone, not from a field initialised at construction | A completed future made in one zone and chained from another (the app was built inside `runAsync`, the test in fake-async) made saves depend on event-loop timing, which gave tests that passed or hung at random | B8 |
