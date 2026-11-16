@@ -19,9 +19,9 @@ void main() {
     WidgetTester tester,
     FakeKeyValueStore store,
   ) async {
-    // The save was queued on the real event loop (the provider was built
-    // inside runAsync), so let that loop turn before reading the store.
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    for (int i = 0; i < 3; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
     return (await tester.runAsync(() => SettingsService(store).load()))!;
   }
 

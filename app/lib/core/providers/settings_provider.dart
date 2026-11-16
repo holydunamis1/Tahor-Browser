@@ -12,7 +12,7 @@ class SettingsProvider extends ValueNotifier<AppSettings> {
   }) : super(initial);
 
   final SettingsService _service;
-  Future<void> _saving = Future<void>.value();
+  Future<void>? _saving;
 
   /// True when settings could not be saved and may be lost on exit.
   final ValueNotifier<bool> persistenceFailed = ValueNotifier<bool>(false);
@@ -36,11 +36,16 @@ class SettingsProvider extends ValueNotifier<AppSettings> {
   Future<void> _change(AppSettings Function(AppSettings) change) {
     final AppSettings next = change(value);
     if (next == value) {
-      return _saving;
+      return _saving ?? Future<void>.value();
     }
     value = next;
-    _saving = _saving.then((_) => _persist(next));
-    return _saving;
+    // The chain starts from a future made here, in the caller's zone, so a
+    // save never waits on an event loop that belongs to someone else.
+    final Future<void> chain = (_saving ?? Future<void>.value()).then(
+      (_) => _persist(next),
+    );
+    _saving = chain;
+    return chain;
   }
 
   Future<void> _persist(AppSettings settings) async {

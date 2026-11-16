@@ -101,3 +101,4 @@ All direct dependencies in `app/pubspec.yaml` resolve together on Flutter 3.47.7
 ## Milestone log
 
 An entry is appended at each milestone exit with the date, the build used, the phone checklist result and the integration run.
+| D-59 | `SettingsProvider` starts each save chain from a future created in the caller's zone, not from a field initialised at construction | A completed future made in one zone and chained from another (the app was built inside `runAsync`, the test in fake-async) made saves depend on event-loop timing, which gave tests that passed or hung at random | B8 |
