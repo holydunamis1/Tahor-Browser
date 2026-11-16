@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.zdmgold.tahorbrowser"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android requires compiling against API 37; the Flutter
+    // default is 36. Compiling higher does not change which devices run the app.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
