@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
+import 'package:tahorbrowser/core/contracts/app_info.dart';
 import 'package:tahorbrowser/core/contracts/browser_engine.dart';
+import 'package:tahorbrowser/core/contracts/external_launcher.dart';
 import 'package:tahorbrowser/core/contracts/key_value_store.dart';
+import 'package:tahorbrowser/core/contracts/share.dart';
 
 /// A [KeyValueStore] in memory, with switches to simulate storage trouble.
 class FakeKeyValueStore implements KeyValueStore {
@@ -94,4 +97,39 @@ class FakeBrowserEngine implements BrowserEngine {
 
   @override
   Future<void> dispose(String tabId) async => calls.add('dispose $tabId');
+}
+
+/// An [ExternalLauncher] that records what it is asked to open.
+class FakeLauncher implements ExternalLauncher {
+  final List<Uri> systemBrowser = <Uri>[];
+  final List<Uri> apps = <Uri>[];
+
+  @override
+  Future<bool> openInSystemBrowser(Uri uri) async {
+    systemBrowser.add(uri);
+    return true;
+  }
+
+  @override
+  Future<bool> openExternalApp(Uri uri) async {
+    apps.add(uri);
+    return true;
+  }
+}
+
+/// A [Share] that records what it is asked to share.
+class FakeShare implements Share {
+  final List<(Uri, String?)> shared = <(Uri, String?)>[];
+
+  @override
+  Future<void> shareUrl(Uri url, {String? title}) async =>
+      shared.add((url, title));
+}
+
+class FakeAppInfo implements AppInfo {
+  @override
+  String get version => '0.1.0';
+
+  @override
+  String get buildNumber => '1';
 }
