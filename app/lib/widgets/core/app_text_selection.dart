@@ -169,8 +169,15 @@ class _MenuLayoutDelegate extends SingleChildLayoutDelegate {
   static const double _edge = Spacing.s;
 
   @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
-      constraints.loosen();
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    // The menu may never be wider than the screen; its actions wrap onto a
+    // second line instead of running off the edge.
+    final double maxWidth = math.max(
+      0,
+      constraints.maxWidth - screenPadding.horizontal - _edge * 2,
+    );
+    return BoxConstraints(maxWidth: maxWidth, maxHeight: constraints.maxHeight);
+  }
 
   @override
   Offset getPositionForChild(Size size, Size childSize) {
@@ -209,19 +216,6 @@ class _Toolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> children = <Widget>[];
-    for (int i = 0; i < actions.length; i++) {
-      if (i > 0) {
-        children.add(
-          SizedBox(
-            width: 1,
-            height: IconSizes.chipContainer - Spacing.s,
-            child: ColoredBox(color: theme.palette.borderSubtle),
-          ),
-        );
-      }
-      children.add(_MenuButton(action: actions[i], theme: theme));
-    }
     return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.palette.bgSecondary,
@@ -229,7 +223,18 @@ class _Toolbar extends StatelessWidget {
         border: Border.all(color: theme.palette.borderSubtle),
         boxShadow: theme.shadows.subtle,
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: children),
+      // Wrap sizes itself to the widest line, so a short menu stays one tight
+      // line and a long one (Paste and go plus Select all) takes two.
+      child: Padding(
+        padding: const EdgeInsets.all(Spacing.xs),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          children: <Widget>[
+            for (final _MenuAction action in actions)
+              _MenuButton(action: action, theme: theme),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -268,7 +273,7 @@ class _MenuButtonState extends State<_MenuButton> {
             opacity: _pressed ? 0.5 : 1,
             child: Padding(
               padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: Spacing.m,
+                horizontal: Spacing.s + Spacing.xs,
               ),
               child: Center(
                 widthFactor: 1,

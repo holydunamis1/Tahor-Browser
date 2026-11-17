@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: launch-check-${{ github.ref }}
@@ -67,3 +67,22 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash tool/ci_run.sh launch-check bash tool/launch_check.sh app/build/app/outputs/flutter-apk/app-release.apk com.zdmgold.tahorbrowser
+
+      - name: Publish the screenshots to the ci-screenshots branch
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          if [ ! -d shots ] || [ -z "$(ls -A shots)" ]; then
+            echo "No screenshots were taken."
+            exit 0
+          fi
+          rm -rf /tmp/shots && cp -r shots /tmp/shots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan ci-screenshots
+          git rm -rf --quiet . || true
+          cp /tmp/shots/*.png .
+          printf 'Emulator screenshots of commit %s, run %s.\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > README.txt
+          git add -A
+          git commit -q -m "screenshots of ${GITHUB_SHA::7}"
+          git push -f origin ci-screenshots

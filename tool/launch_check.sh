@@ -24,6 +24,33 @@ cat crash.log
 echo "--- error lines:"
 cat errors.log
 
+# Screenshots of the first screens, for inspection. Best effort: a failure here
+# never changes the launch verdict.
+mkdir -p shots
+size="$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1)"
+W="${size%x*}"
+H="${size#*x}"
+snap() { adb exec-out screencap -p > "shots/$1.png" 2>/dev/null || true; }
+tap() { adb shell input tap "$1" "$2" || true; }
+snap 01-start
+tap $((W / 2)) $((H * 8 / 100))
+sleep 2
+snap 02-address-focused
+adb shell input text "en.m.wikipedia.org" || true
+adb shell input keyevent 66 || true
+sleep 12
+snap 03-page-loaded
+tap $((W * 86 / 100)) $((H * 91 / 100))
+sleep 2
+snap 04-menu
+adb shell input keyevent 4 || true
+sleep 1
+adb shell cmd uimode night yes || true
+sleep 3
+snap 05-phone-dark-mode
+adb shell cmd uimode night no || true
+echo "SCREENSHOTS: $(ls shots | wc -l) taken at ${W}x${H}"
+
 if [ -z "$pid" ] || grep -q "FATAL EXCEPTION" crash.log; then
   echo "LAUNCH-CHECK FAIL: the app is not running or crashed (pid='${pid}')"
   exit 1

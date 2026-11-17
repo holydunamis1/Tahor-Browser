@@ -75,6 +75,9 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-67 | The release workflow uploads only `docs/size-baseline.json` as an artifact; the APKs are in the pre-release | The old artifact zip held the app bundle, symbols and every ABI, which was too large to download on a phone and not needed for testing | B9 |
 | D-68 | Google's sample AdMob app IDs are set now (Android `com.google.android.gms.ads.APPLICATION_ID`, iOS `GADApplicationIdentifier`), not in B34 | `google_mobile_ads` is a dependency from B0 and its startup provider ends the process without the ID; the first release APK crashed on launch. Sample IDs match the decision to use Google's test IDs until M8 | B9 |
 | D-69 | A release build uploads one uniquely named APK, `tahor-release-N-arm64.apk`, as an unzipped artifact (`archive: false`) on the Actions run page, and the same file to the pre-release. The armeabi-v7a APK is no longer published | The owner tests from the Actions tab on a phone; zips and several similarly named files caused a wrong or unusable download | B9 |
+| D-70 | The name under the launcher icon is "Tahor Browser" on Android and iOS; the store title stays "Tahor Fast & Private Browser" until changed. This supersedes the launcher part of D-32 | Owner instruction after the first phone test: the full name is truncated under the icon | B9 |
+| D-71 | The text-selection menu is bounded to the screen width and its actions wrap onto a second line; no dividers | On a 360-wide phone the five address-bar actions ran off the right edge and Select all was cut off | B9 |
+| D-72 | `launch-check` taps through the app on the emulator, takes screenshots and force-pushes them to the `ci-screenshots` branch (it never triggers `verify`) | The design gate requires looking at the real UI; artifacts cannot be downloaded from the automation sandbox, raw files on a branch can | B9 |
 
 ## Verified pins
 
