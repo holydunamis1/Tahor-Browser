@@ -31,7 +31,9 @@ size="$(adb shell wm size | grep -oE '[0-9]+x[0-9]+' | tail -1)"
 W="${size%x*}"
 H="${size#*x}"
 snap() { adb exec-out screencap -p > "shots/$1.png" 2>/dev/null || true; }
-tap() { adb shell input tap "$1" "$2" || true; }
+# A 100 ms press: some Flutter builds ignore the zero-length press of "input tap".
+tap() { adb shell input swipe "$1" "$2" "$1" "$2" 100 || true; }
+sleep 5
 snap 01-start
 tap $((W / 2)) $((H * 8 / 100))
 sleep 2
