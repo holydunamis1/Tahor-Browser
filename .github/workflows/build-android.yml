@@ -151,14 +151,10 @@ jobs:
             echo "The merged-manifest audit arrives in B45."
           fi
 
-      - name: Upload the release artifacts
+      - name: Upload the size baseline (the APKs are in the pre-release)
         if: ${{ inputs.mode == 'release' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: android-release
-          path: |
-            app/build/app/outputs/flutter-apk/*-release.apk
-            app/build/app/outputs/bundle/release/*.aab
-            app/symbols
-            docs/size-baseline.json
+          name: size-baseline
+          path: docs/size-baseline.json
           if-no-files-found: warn

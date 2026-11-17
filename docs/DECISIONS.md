@@ -71,6 +71,8 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-63 | Release-mode builds publish the arm64-v8a and armeabi-v7a APKs as a pre-release (tag `release-N`), signed with the debug key until B41 | The debug APK is 260 MB; the release APK is the realistic size to download and test on a phone | B9 |
 | D-64 | The release workflow no longer runs `dart run pdfrx:remove_wasm_modules` | pdfrx 2.6.5 deleted that tool and declares its WASM assets for the web platform only (`platforms: [web]`), so Android and iOS builds never contain them; the first release build failed on the missing command | B9 |
 | D-65 | The size-report step runs `flutter build apk --release --analyze-size` without `--obfuscate` or `--split-debug-info` | Flutter rejects `--analyze-size` combined with `--split-debug-info`; the report measures sizes, the shipped APKs are built in the earlier steps with obfuscation | B9 |
+| D-66 | `launch-check.yml` builds a release APK for x86_64, installs it on an emulator, launches it and fails with the crash log if the app dies; `tool/launch_check.sh` does the work | `verify` cannot show that the app starts. The first release APK crashed on launch and nothing in CI could have caught it | B9 |
+| D-67 | The release workflow uploads only `docs/size-baseline.json` as an artifact; the APKs are in the pre-release | The old artifact zip held the app bundle, symbols and every ABI, which was too large to download on a phone and not needed for testing | B9 |
 
 ## Verified pins
 
