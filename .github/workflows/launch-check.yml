@@ -62,6 +62,7 @@ jobs:
           CI_SHOW: '1'
         with:
           api-level: 30
+          profile: pixel_5
           arch: x86_64
           target: default
           disable-animations: true
@@ -70,19 +71,6 @@ jobs:
 
       - name: Publish the screenshots to the ci-screenshots branch
         if: ${{ always() }}
-        run: |
-          set -euo pipefail
-          if [ ! -d shots ] || [ -z "$(ls -A shots)" ]; then
-            echo "No screenshots were taken."
-            exit 0
-          fi
-          rm -rf /tmp/shots && cp -r shots /tmp/shots
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan ci-screenshots
-          git rm -rf --quiet . || true
-          cp /tmp/shots/*.png .
-          printf 'Emulator screenshots of commit %s, run %s.\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > README.txt
-          git add -A
-          git commit -q -m "screenshots of ${GITHUB_SHA::7}"
-          git push -f origin ci-screenshots
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash tool/ci_run.sh publish-shots bash tool/publish_screenshots.sh
