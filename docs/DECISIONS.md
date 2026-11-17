@@ -74,6 +74,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-66 | `launch-check.yml` builds a release APK for x86_64, installs it on an emulator, launches it and fails with the crash log if the app dies; `tool/launch_check.sh` does the work | `verify` cannot show that the app starts. The first release APK crashed on launch and nothing in CI could have caught it | B9 |
 | D-67 | The release workflow uploads only `docs/size-baseline.json` as an artifact; the APKs are in the pre-release | The old artifact zip held the app bundle, symbols and every ABI, which was too large to download on a phone and not needed for testing | B9 |
 | D-68 | Google's sample AdMob app IDs are set now (Android `com.google.android.gms.ads.APPLICATION_ID`, iOS `GADApplicationIdentifier`), not in B34 | `google_mobile_ads` is a dependency from B0 and its startup provider ends the process without the ID; the first release APK crashed on launch. Sample IDs match the decision to use Google's test IDs until M8 | B9 |
+| D-69 | A release build uploads one uniquely named APK, `tahor-release-N-arm64.apk`, as an unzipped artifact (`archive: false`) on the Actions run page, and the same file to the pre-release. The armeabi-v7a APK is no longer published | The owner tests from the Actions tab on a phone; zips and several similarly named files caused a wrong or unusable download | B9 |
 
 ## Verified pins
 
