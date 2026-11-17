@@ -70,6 +70,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-62 | Android `compileSdk` is 37 with `android.suppressUnsupportedCompileSdk=37`; `synthetic-package` is removed from `l10n.yaml` | `permission_handler_android` requires API 37 while AGP 9.1.0 recommends 36 at most (first debug build); Flutter 3.47.7 reports the synthetic-package flag as having no effect | B9 |
 | D-63 | Release-mode builds publish the arm64-v8a and armeabi-v7a APKs as a pre-release (tag `release-N`), signed with the debug key until B41 | The debug APK is 260 MB; the release APK is the realistic size to download and test on a phone | B9 |
 | D-64 | The release workflow no longer runs `dart run pdfrx:remove_wasm_modules` | pdfrx 2.6.5 deleted that tool and declares its WASM assets for the web platform only (`platforms: [web]`), so Android and iOS builds never contain them; the first release build failed on the missing command | B9 |
+| D-65 | The size-report step runs `flutter build apk --release --analyze-size` without `--obfuscate` or `--split-debug-info` | Flutter rejects `--analyze-size` combined with `--split-debug-info`; the report measures sizes, the shipped APKs are built in the earlier steps with obfuscation | B9 |
 
 ## Verified pins
 

@@ -114,7 +114,7 @@ jobs:
       - name: Size report
         if: ${{ inputs.mode == 'release' }}
         working-directory: app
-        run: bash ../tool/ci_run.sh size-report flutter build apk --release --analyze-size --target-platform android-arm64 --obfuscate --split-debug-info=symbols-size
+        run: bash ../tool/ci_run.sh size-report flutter build apk --release --analyze-size --target-platform android-arm64
 
       - name: Size gate
         if: ${{ inputs.mode == 'release' }}
