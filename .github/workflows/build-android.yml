@@ -101,11 +101,6 @@ jobs:
             echo "keyAlias=$ANDROID_KEY_ALIAS"
           } > app/android/key.properties
 
-      - name: Remove the PDF engine web assets
-        if: ${{ inputs.mode == 'release' }}
-        working-directory: app
-        run: bash ../tool/ci_run.sh remove-wasm dart run pdfrx:remove_wasm_modules
-
       - name: Build the app bundle
         if: ${{ inputs.mode == 'release' }}
         working-directory: app
