@@ -254,6 +254,37 @@ void main() {
     expect(controller.text, isEmpty);
   });
 
+  testWidgets('a five-action menu stays inside a narrow screen', (
+    WidgetTester tester,
+  ) async {
+    mockClipboard(tester);
+    clipboard = 'example.com';
+    tester.view.physicalSize = const Size(300, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    controller.text = 'https://intelreap.com';
+    await tester.pumpWidget(
+      field(
+        menu: (BuildContext context, EditableTextState state) =>
+            appContextMenuBuilder(context, state, onPasteAndGo: (_) {}),
+      ),
+    );
+    await tester.longPress(find.byType(EditableText));
+    await tester.pumpAndSettle();
+    for (final String label in <String>[
+      'Cut',
+      'Copy',
+      'Paste',
+      'Paste and go',
+      'Select all',
+    ]) {
+      final Rect rect = tester.getRect(find.text(label));
+      expect(rect.left, greaterThanOrEqualTo(0), reason: label);
+      expect(rect.right, lessThanOrEqualTo(300), reason: label);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a password field offers no selection menu', (
     WidgetTester tester,
   ) async {

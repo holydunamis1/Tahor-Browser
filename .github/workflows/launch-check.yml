@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: launch-check-${{ github.ref }}
@@ -62,8 +62,15 @@ jobs:
           CI_SHOW: '1'
         with:
           api-level: 30
+          profile: pixel_5
           arch: x86_64
           target: default
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash tool/ci_run.sh launch-check bash tool/launch_check.sh app/build/app/outputs/flutter-apk/app-release.apk com.zdmgold.tahorbrowser
+
+      - name: Publish the screenshots to the ci-screenshots branch
+        if: ${{ always() }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash tool/ci_run.sh publish-shots bash tool/publish_screenshots.sh
