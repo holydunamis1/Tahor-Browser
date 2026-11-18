@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/core/constants/app_constants.dart';
 import 'package:tahorbrowser/core/contracts/browser_engine.dart';
 import 'package:tahorbrowser/core/error/error_taxonomy.dart';
+import 'package:tahorbrowser/core/models/session_snapshot.dart';
 import 'package:tahorbrowser/core/models/tab_model.dart';
 import 'package:tahorbrowser/core/providers/tabs_provider.dart';
 import 'package:tahorbrowser/core/utils/url_utils.dart';
@@ -382,6 +385,104 @@ void main() {
 
     test('an unknown tab has a default runtime', () {
       expect(tabs.value.runtimeOf('zzz'), const TabRuntime());
+    });
+  });
+
+  group('live tabs and restore', () {
+    Uint8List state(int v) => Uint8List.fromList(<int>[v]);
+
+    test('the first tab starts live', () {
+      expect(tabs.value.live, <String>['t0']);
+    });
+
+    test('opening a tab makes it live; closing removes it', () {
+      tabs.openTab(url: Uri.parse('https://a.com'));
+      expect(tabs.value.live, <String>['t0', 't1']);
+      tabs.closeTab('t0');
+      expect(tabs.value.live, <String>['t1']);
+    });
+
+    test('closing the last tab leaves a fresh live blank tab', () {
+      tabs.closeTab('t0');
+      expect(tabs.value.live, <String>['t1']);
+    });
+
+    test('selecting a live tab makes it the most recently used', () {
+      tabs.openTab(url: Uri.parse('https://a.com'));
+      tabs.openTab(url: Uri.parse('https://b.com'));
+      tabs.selectTab('t0');
+      expect(tabs.value.live, <String>['t1', 't2', 't0']);
+    });
+
+    test('selecting a hibernated tab does not make it live by itself', () {
+      tabs.openTab(url: Uri.parse('https://a.com'));
+      tabs.markHibernated('t0');
+      tabs.selectTab('t0');
+      expect(tabs.value.isLive('t0'), isFalse);
+      tabs.markLive('t0', restoredState: state(5));
+      expect(tabs.value.isLive('t0'), isTrue);
+    });
+
+    test('the showing tab cannot be hibernated, another can', () {
+      tabs.openTab(url: Uri.parse('https://a.com'));
+      tabs.markHibernated('t1');
+      expect(tabs.value.isLive('t1'), isTrue);
+      tabs.markHibernated('t0');
+      expect(tabs.value.isLive('t0'), isFalse);
+    });
+
+    test('saved state reaches the view config until the view reports in', () {
+      tabs.navigate('https://a.com');
+      tabs.markHibernated('t0');
+      tabs.openTab(url: Uri.parse('https://b.com'));
+      tabs.markLive('t0', restoredState: state(5));
+      expect(tabs.configFor(tabs.value.tabs.first).restoredState, state(5));
+      // A build that is thrown away must not lose it.
+      expect(tabs.configFor(tabs.value.tabs.first).restoredState, state(5));
+      tabs.handleEvent(PageStarted('t0', Uri.parse('https://a.com')));
+      expect(tabs.configFor(tabs.value.tabs.first).restoredState, isNull);
+    });
+
+    test('markLive ignores a tab that does not exist', () {
+      tabs.markLive('nope', restoredState: state(1));
+      expect(tabs.value.live, <String>['t0']);
+    });
+
+    test('recordSaved stores scroll and the state key on the tab', () {
+      tabs.recordSaved('t0', scrollY: 321, stateKey: 'k');
+      expect(tabs.activeTab.scrollY, 321);
+      expect(tabs.activeTab.stateKey, 'k');
+    });
+
+    test(
+      'restore replaces the tabs and gives a view only to the showing one',
+      () {
+        tabs.openTab(url: Uri.parse('https://old.com'));
+        final SessionSnapshot snapshot = SessionSnapshot.capture(
+          tabs: const <TabModel>[
+            TabModel(id: 'a', url: 'https://a.com'),
+            TabModel(id: 'b', url: 'https://b.com'),
+          ],
+          activeTabId: 'b',
+          savedAt: DateTime.utc(2026),
+        );
+        tabs.restore(snapshot);
+        expect(ids(), <String>['a', 'b']);
+        expect(tabs.activeTab.id, 'b');
+        expect(tabs.value.live, <String>['b']);
+        expect(engine.calls, containsAll(<String>['dispose t0', 'dispose t1']));
+      },
+    );
+
+    test('restoring an empty snapshot changes nothing', () {
+      tabs.restore(
+        SessionSnapshot.capture(
+          tabs: const <TabModel>[],
+          activeTabId: null,
+          savedAt: DateTime.utc(2026),
+        ),
+      );
+      expect(ids(), <String>['t0']);
     });
   });
 }

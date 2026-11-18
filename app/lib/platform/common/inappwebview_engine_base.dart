@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../core/contracts/browser_engine.dart';
 import '../../core/contracts/external_launcher.dart';
 import '../../core/error/error_taxonomy.dart';
+import '../../core/scripts/scroll_capture_script.dart';
 import '../../core/theme/theme_builder.dart';
 import '../../core/utils/url_utils.dart';
 
@@ -181,6 +183,45 @@ abstract class InAppWebViewEngineBase implements BrowserEngine {
   Future<void> dispose(String tabId) async {
     _controllers.remove(tabId);
   }
+
+  @override
+  bool isLive(String tabId) => _controllers.containsKey(tabId);
+
+  @override
+  Future<Uint8List?> saveState(String tabId) async {
+    try {
+      return await _controllers[tabId]?.saveState();
+    } on Exception {
+      return null;
+    }
+  }
+
+  @override
+  Future<Object?> evaluate(String tabId, String script) async {
+    try {
+      return await _controllers[tabId]?.evaluateJavascript(source: script)
+          as Object?;
+    } on Exception {
+      return null;
+    }
+  }
+
+  @override
+  Future<Uint8List?> takeThumbnail(String tabId) async {
+    try {
+      return await _controllers[tabId]?.takeScreenshot(
+        screenshotConfiguration: ScreenshotConfiguration(
+          snapshotWidth: _thumbnailWidth,
+          quality: 70,
+        ),
+      );
+    } on Exception {
+      return null;
+    }
+  }
+
+  /// Width of a tab preview in logical pixels.
+  static const double _thumbnailWidth = 320;
 }
 
 class _WebTab extends StatefulWidget {
@@ -202,6 +243,19 @@ class _WebTab extends StatefulWidget {
 class _WebTabState extends State<_WebTab> {
   PullToRefreshController? _pull;
   InAppWebViewController? _controller;
+
+  /// Set while a page loaded by address (not restored from state) should be
+  /// scrolled to where the tab was left.
+  double? _scrollAfterLoad;
+
+  @override
+  void initState() {
+    super.initState();
+    final double y = widget.config.restoreScrollY;
+    if (widget.config.initialUrl != null && y > 0) {
+      _scrollAfterLoad = y;
+    }
+  }
 
   String get _tabId => widget.config.tabId;
 
@@ -225,6 +279,31 @@ class _WebTabState extends State<_WebTab> {
       widget.engine._controllers.remove(_tabId);
     }
     super.dispose();
+  }
+
+  /// Brings back a saved history. When the platform cannot, the address is
+  /// loaded instead and the scroll position is restored after it loads.
+  Future<void> _restoreSavedState(
+    InAppWebViewController controller,
+    Uint8List state,
+  ) async {
+    bool restored = false;
+    try {
+      restored = await controller.restoreState(state);
+    } on Exception {
+      restored = false;
+    }
+    if (restored) {
+      _scrollAfterLoad = null;
+      return;
+    }
+    final Uri? url = widget.config.initialUrl;
+    if (url != null) {
+      _scrollAfterLoad = widget.config.restoreScrollY > 0
+          ? widget.config.restoreScrollY
+          : null;
+      await controller.loadUrl(urlRequest: URLRequest(url: WebUri.uri(url)));
+    }
   }
 
   Future<void> _emitNavigationState(
@@ -264,8 +343,11 @@ class _WebTabState extends State<_WebTab> {
   @override
   Widget build(BuildContext context) {
     final Uri? initial = widget.config.initialUrl;
+    final Uint8List? saved = widget.config.restoredState;
     return InAppWebView(
-      initialUrlRequest: initial == null
+      // With saved state the view is restored once it exists; loading the
+      // address as well would load the page twice.
+      initialUrlRequest: initial == null || saved != null
           ? null
           : URLRequest(url: WebUri.uri(initial)),
       initialSettings: widget.engine.settingsFor(widget.config),
@@ -273,6 +355,9 @@ class _WebTabState extends State<_WebTab> {
       onWebViewCreated: (InAppWebViewController controller) {
         _controller = controller;
         widget.engine._controllers[_tabId] = controller;
+        if (saved != null) {
+          unawaited(_restoreSavedState(controller, saved));
+        }
       },
       onLoadStart: (InAppWebViewController controller, WebUri? url) {
         if (url != null) {
@@ -286,6 +371,17 @@ class _WebTabState extends State<_WebTab> {
         }
         await _emitNavigationState(controller, url);
         await _emitFavicon(controller);
+        final double? scroll = _scrollAfterLoad;
+        if (scroll != null) {
+          _scrollAfterLoad = null;
+          try {
+            await controller.evaluateJavascript(
+              source: ScrollScripts.restore(scroll),
+            );
+          } on Exception {
+            // The page went away; there is nothing to scroll.
+          }
+        }
       },
       onProgressChanged: (InAppWebViewController controller, int progress) {
         widget.sink(ProgressChanged(_tabId, progress / 100));
