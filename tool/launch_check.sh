@@ -35,7 +35,7 @@ snap() { adb exec-out screencap -p > "shots/$1.png" 2>/dev/null || true; }
 tap() { adb shell input swipe "$1" "$2" "$1" "$2" 100 || true; }
 sleep 5
 snap 01-start
-tap $((W / 2)) $((H * 8 / 100))
+tap $((W / 2)) $((H * 10 / 100))
 sleep 2
 snap 02-address-focused
 adb shell input text "en.m.wikipedia.org" || true

@@ -78,6 +78,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-70 | The name under the launcher icon is "Tahor Browser" on Android and iOS; the store title stays "Tahor Fast & Private Browser" until changed. This supersedes the launcher part of D-32 | Owner instruction after the first phone test: the full name is truncated under the icon | B9 |
 | D-71 | The text-selection menu is bounded to the screen width and its actions wrap onto a second line; no dividers | On a 360-wide phone the five address-bar actions ran off the right edge and Select all was cut off | B9 |
 | D-72 | `launch-check` taps through the app on the emulator, takes screenshots and force-pushes them to the `ci-screenshots` branch (it never triggers `verify`) | The design gate requires looking at the real UI; artifacts cannot be downloaded from the automation sandbox, raw files on a branch can | B9 |
+| D-73 | Test APKs are built only at agreed points: a milestone exit or when the owner asks. No more than two before the full app is complete (owner instruction); builds 1 to 9 exceeded that during M1 and are not to be repeated | Builds were dispatched to deliver small label changes the owner did not need to test | B9 |
 
 ## Verified pins
 
