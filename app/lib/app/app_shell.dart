@@ -23,14 +23,36 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   Key _rootKey = UniqueKey();
   bool _errorWidgetInstalled = false;
   ErrorWidgetBuilder? _previousErrorWidget;
+  AppDependencies? _deps;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// The system may end the process once the app is in the background, so the
+  /// open tabs are saved as soon as it leaves the screen.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      final AppDependencies? deps = _deps;
+      if (deps != null) {
+        unawaited(deps.sessionRestore.flush());
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _deps = AppScope.of(context);
     if (_errorWidgetInstalled) {
       return;
     }
@@ -48,6 +70,8 @@ class _AppShellState extends State<AppShell> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _deps?.dispose();
     // Give the framework its own error screen back when the app goes away.
     final ErrorWidgetBuilder? previous = _previousErrorWidget;
     if (previous != null) {

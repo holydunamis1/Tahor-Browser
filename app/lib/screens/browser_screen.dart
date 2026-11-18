@@ -116,7 +116,12 @@ class BrowserScreen extends StatelessWidget {
                 ),
               ],
             ),
-            body: _PageArea(tab: tab, runtime: runtime, deps: deps),
+            body: _PageArea(
+              state: state,
+              tab: tab,
+              runtime: runtime,
+              deps: deps,
+            ),
             bottom: BrowserNavBar(
               canGoBack: runtime.canGoBack,
               canGoForward: runtime.canGoForward,
@@ -141,11 +146,13 @@ class BrowserScreen extends StatelessWidget {
 
 class _PageArea extends StatelessWidget {
   const _PageArea({
+    required this.state,
     required this.tab,
     required this.runtime,
     required this.deps,
   });
 
+  final TabsState state;
   final TabModel tab;
   final TabRuntime runtime;
   final AppDependencies deps;
@@ -153,11 +160,26 @@ class _PageArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
+    // Every live tab keeps its view mounted, so switching tabs keeps each
+    // page's history and scroll. Hibernated tabs have no view at all; the
+    // showing one is woken by the lifecycle service, which restores its state
+    // before the view is built. Until then the page area is plain.
     return Stack(
       children: <Widget>[
-        Positioned.fill(
-          child: tab.isBlank ? const _BlankPage() : deps.tabs.buildView(tab),
-        ),
+        Positioned.fill(child: ColoredBox(color: theme.palette.bgPrimary)),
+        for (final TabModel t in state.tabs)
+          if (state.isLive(t.id) && !t.isBlank)
+            Positioned.fill(
+              key: ValueKey<String>('page-${t.id}'),
+              child: Offstage(
+                offstage: t.id != tab.id,
+                child: TickerMode(
+                  enabled: t.id == tab.id,
+                  child: deps.tabs.buildView(t),
+                ),
+              ),
+            ),
+        if (tab.isBlank) const Positioned.fill(child: _BlankPage()),
         if (runtime.error != null)
           Positioned.fill(
             child: ColoredBox(

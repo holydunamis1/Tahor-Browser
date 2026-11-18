@@ -99,7 +99,49 @@ class FakeBrowserEngine implements BrowserEngine {
   Future<void> stop(String tabId) async => calls.add('stop $tabId');
 
   @override
-  Future<void> dispose(String tabId) async => calls.add('dispose $tabId');
+  Future<void> dispose(String tabId) async {
+    calls.add('dispose $tabId');
+    live.remove(tabId);
+  }
+
+  /// Tabs the fake treats as having a live view. Tests add to it.
+  final Set<String> live = <String>{};
+
+  /// What [saveState] returns per tab; a missing tab gives null.
+  final Map<String, Uint8List> states = <String, Uint8List>{};
+
+  /// What [evaluate] returns per tab.
+  final Map<String, Object?> evaluated = <String, Object?>{};
+
+  /// The scripts that were run, as `tabId: script`.
+  final List<String> scripts = <String>[];
+
+  /// What [takeThumbnail] returns per tab.
+  final Map<String, Uint8List> thumbnails = <String, Uint8List>{};
+
+  /// Makes [saveState] throw, as a plugin can.
+  bool failSaveState = false;
+
+  @override
+  bool isLive(String tabId) => live.contains(tabId);
+
+  @override
+  Future<Uint8List?> saveState(String tabId) async {
+    calls.add('saveState $tabId');
+    if (failSaveState) {
+      throw StateError('plugin failed');
+    }
+    return states[tabId];
+  }
+
+  @override
+  Future<Object?> evaluate(String tabId, String script) async {
+    scripts.add('$tabId: $script');
+    return evaluated[tabId];
+  }
+
+  @override
+  Future<Uint8List?> takeThumbnail(String tabId) async => thumbnails[tabId];
 }
 
 /// An [ExternalLauncher] that records what it is asked to open.

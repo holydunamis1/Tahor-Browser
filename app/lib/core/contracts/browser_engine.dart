@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 
 import '../error/error_taxonomy.dart';
@@ -11,6 +13,8 @@ class TabViewConfig {
     this.initialUrl,
     this.isIncognito = false,
     this.viewMode = TabViewMode.mobile,
+    this.restoredState,
+    this.restoreScrollY = 0,
   });
 
   final String tabId;
@@ -19,6 +23,14 @@ class TabViewConfig {
   final Uri? initialUrl;
   final bool isIncognito;
   final TabViewMode viewMode;
+
+  /// A web view state saved earlier by [BrowserEngine.saveState]. When it is
+  /// given the engine restores the tab's whole history from it. When it cannot
+  /// be restored the engine loads [initialUrl] and scrolls to [restoreScrollY].
+  final Uint8List? restoredState;
+
+  /// Where to scroll after a plain reload of [initialUrl], in logical pixels.
+  final double restoreScrollY;
 }
 
 /// A navigation the engine is about to perform.
@@ -160,4 +172,18 @@ abstract interface class BrowserEngine {
 
   /// Releases the web view of a tab.
   Future<void> dispose(String tabId);
+
+  /// True while a tab has a live web view.
+  bool isLive(String tabId);
+
+  /// The tab's whole navigation state, or null when it has no live view or
+  /// the platform could not produce it.
+  Future<Uint8List?> saveState(String tabId);
+
+  /// Runs JavaScript in the tab's page and returns what it evaluated to, or
+  /// null when there is no live view or the script failed.
+  Future<Object?> evaluate(String tabId, String script);
+
+  /// A small PNG of what the tab shows, or null when that is not possible.
+  Future<Uint8List?> takeThumbnail(String tabId);
 }

@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../constants/app_constants.dart';
 import '../contracts/browser_engine.dart';
 import '../error/error_taxonomy.dart';
+import '../models/session_snapshot.dart';
 import '../models/tab_model.dart';
 import '../utils/url_utils.dart';
 
@@ -69,11 +70,30 @@ class TabsState {
     required this.tabs,
     required this.activeIndex,
     this.runtime = const <String, TabRuntime>{},
+    this.live = const <String>[],
   });
 
   final List<TabModel> tabs;
   final int activeIndex;
   final Map<String, TabRuntime> runtime;
+
+  /// The tabs that have a web view right now, least recently used first. The
+  /// rest are hibernated: saved to disk and released.
+  final List<String> live;
+
+  bool isLive(String tabId) => live.contains(tabId);
+
+  TabsState copyWith({
+    List<TabModel>? tabs,
+    int? activeIndex,
+    Map<String, TabRuntime>? runtime,
+    List<String>? live,
+  }) => TabsState(
+    tabs: tabs ?? this.tabs,
+    activeIndex: activeIndex ?? this.activeIndex,
+    runtime: runtime ?? this.runtime,
+    live: live ?? this.live,
+  );
 
   TabModel get activeTab => tabs[activeIndex];
 
@@ -86,12 +106,14 @@ class TabsState {
       other is TabsState &&
       other.activeIndex == activeIndex &&
       listEquals(other.tabs, tabs) &&
+      listEquals(other.live, live) &&
       mapEquals(other.runtime, runtime);
 
   @override
   int get hashCode => Object.hash(
     activeIndex,
     Object.hashAll(tabs),
+    Object.hashAll(live),
     Object.hashAll(runtime.entries.map((e) => Object.hash(e.key, e.value))),
   );
 }
@@ -108,12 +130,20 @@ class TabsProvider extends ValueNotifier<TabsState> {
     TabIdGenerator? idGenerator,
   }) : _newId = idGenerator ?? _sequentialIds(),
        super(const TabsState(tabs: <TabModel>[], activeIndex: 0)) {
-    value = TabsState(tabs: <TabModel>[TabModel(id: _newId())], activeIndex: 0);
+    final TabModel first = TabModel(id: _newId());
+    value = TabsState(
+      tabs: <TabModel>[first],
+      activeIndex: 0,
+      live: <String>[first.id],
+    );
   }
 
   final BrowserEngine _engine;
   final SearchEngine Function() _searchEngine;
   final TabIdGenerator _newId;
+
+  /// Saved state waiting for a tab's view to be built; each is used once.
+  final Map<String, Uint8List> _pendingRestore = <String, Uint8List>{};
 
   static TabIdGenerator _sequentialIds() {
     final String base = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
@@ -135,10 +165,10 @@ class TabsProvider extends ValueNotifier<TabsState> {
       isIncognito: isIncognito,
     );
     final List<TabModel> tabs = <TabModel>[...value.tabs, tab];
-    value = TabsState(
+    value = value.copyWith(
       tabs: tabs,
       activeIndex: select ? tabs.length - 1 : value.activeIndex,
-      runtime: value.runtime,
+      live: <String>[...value.live, tab.id],
     );
     return tab.id;
   }
@@ -151,15 +181,19 @@ class TabsProvider extends ValueNotifier<TabsState> {
       return;
     }
     unawaited(_engine.dispose(id));
+    _pendingRestore.remove(id);
+    final List<String> live = <String>[...value.live]..remove(id);
     final List<TabModel> tabs = <TabModel>[...value.tabs]..removeAt(index);
     final Map<String, TabRuntime> runtime = <String, TabRuntime>{
       ...value.runtime,
     }..remove(id);
     if (tabs.isEmpty) {
+      final TabModel fresh = TabModel(id: _newId());
       value = TabsState(
-        tabs: <TabModel>[TabModel(id: _newId())],
+        tabs: <TabModel>[fresh],
         activeIndex: 0,
         runtime: runtime,
+        live: <String>[fresh.id],
       );
       return;
     }
@@ -169,7 +203,12 @@ class TabsProvider extends ValueNotifier<TabsState> {
     } else if (index == active) {
       active = math.min(active, tabs.length - 1);
     }
-    value = TabsState(tabs: tabs, activeIndex: active, runtime: runtime);
+    value = TabsState(
+      tabs: tabs,
+      activeIndex: active,
+      runtime: runtime,
+      live: live,
+    );
   }
 
   void selectTab(String id) {
@@ -177,10 +216,15 @@ class TabsProvider extends ValueNotifier<TabsState> {
     if (index < 0 || index == value.activeIndex) {
       return;
     }
-    value = TabsState(
-      tabs: value.tabs,
+    final String chosen = value.tabs[index].id;
+    value = value.copyWith(
       activeIndex: index,
-      runtime: value.runtime,
+      // A tab that is already live becomes the most recently used. A
+      // hibernated one is woken by the lifecycle service, which then calls
+      // [markLive], so its view is never built without its saved state.
+      live: value.isLive(chosen)
+          ? <String>[...value.live.where((String t) => t != chosen), chosen]
+          : value.live,
     );
   }
 
@@ -207,13 +251,72 @@ class TabsProvider extends ValueNotifier<TabsState> {
   void reload() => unawaited(_engine.reload(value.activeTab.id));
   void stop() => unawaited(_engine.stop(value.activeTab.id));
 
-  /// What a tab's web view is created from.
+  /// What a tab's web view is created from. Saved state given to [markLive]
+  /// stays available until the view reports its first event, so a build that
+  /// is thrown away before the view exists cannot lose it.
   TabViewConfig configFor(TabModel tab) {
     return TabViewConfig(
       tabId: tab.id,
       initialUrl: tab.isBlank ? null : Uri.tryParse(tab.url),
       isIncognito: tab.isIncognito,
       viewMode: tab.viewMode,
+      restoredState: _pendingRestore[tab.id],
+      restoreScrollY: tab.scrollY,
+    );
+  }
+
+  /// Gives a tab a web view, optionally restored from [restoredState]. Ignored
+  /// for unknown tabs.
+  void markLive(String tabId, {Uint8List? restoredState}) {
+    if (!value.tabs.any((TabModel t) => t.id == tabId)) {
+      return;
+    }
+    if (restoredState != null) {
+      _pendingRestore[tabId] = restoredState;
+    }
+    if (value.isLive(tabId)) {
+      return;
+    }
+    value = value.copyWith(live: <String>[...value.live, tabId]);
+  }
+
+  /// Releases a tab's view; its saved state stays on disk. The showing tab
+  /// cannot be hibernated.
+  void markHibernated(String tabId) {
+    if (!value.isLive(tabId) || value.activeTab.id == tabId) {
+      return;
+    }
+    _pendingRestore.remove(tabId);
+    value = value.copyWith(live: <String>[...value.live]..remove(tabId));
+  }
+
+  /// Records where a tab was scrolled to, and the key of its saved state.
+  void recordSaved(String tabId, {double? scrollY, String? stateKey}) {
+    _apply(
+      tabId,
+      tab: (TabModel t) =>
+          t.copyWith(scrollY: scrollY, stateKey: stateKey ?? t.stateKey),
+    );
+  }
+
+  /// Replaces every tab with the ones in [snapshot]. Only the showing tab gets
+  /// a view; the rest wake when selected. An empty snapshot changes nothing.
+  void restore(SessionSnapshot snapshot) {
+    if (snapshot.isEmpty) {
+      return;
+    }
+    for (final TabModel old in value.tabs) {
+      unawaited(_engine.dispose(old.id));
+    }
+    _pendingRestore.clear();
+    final List<TabModel> tabs = snapshot.tabs.length > AppConstants.maxTabs
+        ? snapshot.tabs.sublist(0, AppConstants.maxTabs)
+        : snapshot.tabs;
+    final int active = math.min(snapshot.activeIndex, tabs.length - 1);
+    value = TabsState(
+      tabs: tabs,
+      activeIndex: active,
+      live: <String>[tabs[active].id],
     );
   }
 
@@ -223,6 +326,8 @@ class TabsProvider extends ValueNotifier<TabsState> {
 
   /// Applies something that happened in a tab. Unknown tabs are ignored.
   void handleEvent(TabEvent event) {
+    // The view exists, so it has used any saved state it was given.
+    _pendingRestore.remove(event.tabId);
     switch (event) {
       case PageStarted(:final Uri url):
         _apply(
@@ -302,10 +407,6 @@ class TabsProvider extends ValueNotifier<TabsState> {
     if (identical(tabs, value.tabs) && identical(states, value.runtime)) {
       return;
     }
-    value = TabsState(
-      tabs: tabs,
-      activeIndex: value.activeIndex,
-      runtime: states,
-    );
+    value = value.copyWith(tabs: tabs, runtime: states);
   }
 }

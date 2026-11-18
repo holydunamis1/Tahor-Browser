@@ -8,6 +8,9 @@ import 'providers/locale_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/tabs_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/session_restore_service.dart';
+import 'services/tab_lifecycle_service.dart';
+import 'storage/persistence_guard.dart';
 
 /// Everything the screens need, built once at start-up. It holds contracts
 /// and providers only; the platform code that implements them is never
@@ -22,6 +25,9 @@ class AppDependencies {
     required this.launcher,
     required this.share,
     required this.appInfo,
+    required this.sessionRestore,
+    required this.tabLifecycle,
+    required this.persistenceGuard,
   });
 
   final SettingsProvider settings;
@@ -32,6 +38,15 @@ class AppDependencies {
   final ExternalLauncher launcher;
   final Share share;
   final AppInfo appInfo;
+  final SessionRestoreService sessionRestore;
+  final TabLifecycleService tabLifecycle;
+  final PersistenceGuard persistenceGuard;
+
+  /// Stops the background work. Called when the app goes away.
+  void dispose() {
+    sessionRestore.dispose();
+    tabLifecycle.dispose();
+  }
 }
 
 /// Makes [AppDependencies] available to every screen below it.
