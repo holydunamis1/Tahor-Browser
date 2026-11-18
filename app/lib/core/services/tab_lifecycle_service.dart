@@ -68,9 +68,12 @@ class TabLifecycleService {
     try {
       do {
         _again = false;
+        if (!_started) {
+          return;
+        }
         await _wakeActive();
         await _enforceLimit();
-      } while (_again);
+      } while (_again && _started);
     } finally {
       _working = false;
     }
@@ -93,7 +96,8 @@ class TabLifecycleService {
   }
 
   Future<void> _enforceLimit() async {
-    while (_tabs.value.live.length > maxLive) {
+    // A pass that was running when the service was disposed stops here.
+    while (_started && _tabs.value.live.length > maxLive) {
       final TabsState state = _tabs.value;
       String? victim;
       for (final String id in state.live) {
