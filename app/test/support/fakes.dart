@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:tahorbrowser/core/contracts/app_info.dart';
 import 'package:tahorbrowser/core/contracts/browser_engine.dart';
 import 'package:tahorbrowser/core/contracts/external_launcher.dart';
+import 'package:tahorbrowser/core/contracts/file_store.dart';
 import 'package:tahorbrowser/core/contracts/key_value_store.dart';
+import 'package:tahorbrowser/core/contracts/local_database.dart';
 import 'package:tahorbrowser/core/contracts/share.dart';
 
 /// A [KeyValueStore] in memory, with switches to simulate storage trouble.
@@ -132,4 +135,78 @@ class FakeAppInfo implements AppInfo {
 
   @override
   String get buildNumber => '1';
+}
+
+/// A [FileStore] in memory. Set [failWrites] or [failReads] to make it throw.
+class FakeFileStore implements FileStore {
+  final Map<String, Map<String, Uint8List>> data =
+      <String, Map<String, Uint8List>>{};
+  bool failWrites = false;
+  bool failReads = false;
+
+  @override
+  Future<void> write(String namespace, String key, Uint8List bytes) async {
+    if (failWrites) {
+      throw StateError('write failed');
+    }
+    data.putIfAbsent(namespace, () => <String, Uint8List>{})[key] = bytes;
+  }
+
+  @override
+  Future<Uint8List?> read(String namespace, String key) async {
+    if (failReads) {
+      throw StateError('read failed');
+    }
+    return data[namespace]?[key];
+  }
+
+  @override
+  Future<bool> delete(String namespace, String key) async =>
+      data[namespace]?.remove(key) != null;
+
+  @override
+  Future<List<FileEntry>> list(String namespace) async => <FileEntry>[
+    for (final MapEntry<String, Uint8List> e
+        in (data[namespace] ?? <String, Uint8List>{}).entries)
+      FileEntry(e.key, e.value.length),
+  ];
+
+  @override
+  Future<void> clear(String namespace) async => data.remove(namespace);
+}
+
+/// A [LocalDatabase] that records what it is asked to run and answers every
+/// query with no rows. Real SQL is exercised by the integration tests.
+class FakeLocalDatabase implements LocalDatabase {
+  final List<String> statements = <String>[];
+  DatabaseSchema? schema;
+  bool opened = false;
+
+  @override
+  bool get isOpen => opened;
+
+  @override
+  Future<void> open(DatabaseSchema schema) async {
+    this.schema = schema;
+    opened = true;
+  }
+
+  @override
+  Future<void> execute(
+    String sql, [
+    List<Object?> arguments = const <Object?>[],
+  ]) async => statements.add(sql);
+
+  @override
+  Future<List<Row>> query(
+    String sql, [
+    List<Object?> arguments = const <Object?>[],
+  ]) async => const <Row>[];
+
+  @override
+  Future<T> transaction<T>(Future<T> Function(SqlExecutor txn) action) =>
+      action(this);
+
+  @override
+  Future<void> close() async => opened = false;
 }
