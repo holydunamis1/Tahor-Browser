@@ -82,7 +82,7 @@ class SqfliteLocalDatabase implements LocalDatabase {
   ]) => _Exec(_open).execute(statement, arguments);
 
   @override
-  Future<List<Row>> query(
+  Future<List<DbRow>> query(
     String statement, [
     List<Object?> arguments = const <Object?>[],
   ]) => _Exec(_open).query(statement, arguments);
@@ -127,7 +127,7 @@ class _Exec implements SqlExecutor {
   }
 
   @override
-  Future<List<Row>> query(
+  Future<List<DbRow>> query(
     String statement, [
     List<Object?> arguments = const <Object?>[],
   ]) async {
@@ -136,7 +136,7 @@ class _Exec implements SqlExecutor {
         statement,
         arguments,
       );
-      return <Row>[
+      return <DbRow>[
         for (final Map<String, Object?> row in rows) <String, Object?>{...row},
       ];
     } on sql.DatabaseException catch (error) {

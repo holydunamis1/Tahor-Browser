@@ -1,5 +1,5 @@
 /// One row of a query result.
-typedef Row = Map<String, Object?>;
+typedef DbRow = Map<String, Object?>;
 
 /// Runs SQL. Implemented by the open database and by each transaction.
 abstract interface class SqlExecutor {
@@ -8,7 +8,7 @@ abstract interface class SqlExecutor {
     List<Object?> arguments = const <Object?>[],
   ]);
 
-  Future<List<Row>> query(
+  Future<List<DbRow>> query(
     String sql, [
     List<Object?> arguments = const <Object?>[],
   ]);

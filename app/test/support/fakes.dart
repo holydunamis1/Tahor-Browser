@@ -198,10 +198,10 @@ class FakeLocalDatabase implements LocalDatabase {
   ]) async => statements.add(sql);
 
   @override
-  Future<List<Row>> query(
+  Future<List<DbRow>> query(
     String sql, [
     List<Object?> arguments = const <Object?>[],
-  ]) async => const <Row>[];
+  ]) async => const <DbRow>[];
 
   @override
   Future<T> transaction<T>(Future<T> Function(SqlExecutor txn) action) =>

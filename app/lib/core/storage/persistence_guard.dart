@@ -8,8 +8,7 @@ import '../error/error_taxonomy.dart';
 /// [failedAreas] names the parts of the app whose data may not survive a
 /// restart; the interface shows a banner while it is not empty.
 class PersistenceGuard {
-  PersistenceGuard({void Function(AppError error)? onError})
-    : _onError = onError;
+  PersistenceGuard({this._onError});
 
   final void Function(AppError error)? _onError;
 

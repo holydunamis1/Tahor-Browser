@@ -20,6 +20,8 @@ void main() {
     launcher: FakeLauncher(),
     share: FakeShare(),
     keyValueStore: store,
+    localDatabase: FakeLocalDatabase(),
+    fileStore: FakeFileStore(),
     appInfo: FakeAppInfo(),
   );
 
