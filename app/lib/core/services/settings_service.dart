@@ -1,11 +1,12 @@
 import '../contracts/key_value_store.dart';
 import '../models/app_settings.dart';
+import '../storage/storage_keys.dart';
 
 /// Loads and saves [AppSettings] as one JSON value.
 class SettingsService {
   const SettingsService(this._store);
 
-  static const String storageKey = 'app_settings';
+  static const String storageKey = StorageKeys.settings;
 
   final KeyValueStore _store;
 

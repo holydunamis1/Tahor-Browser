@@ -37,6 +37,8 @@ class TestApp {
           launcher: launcher,
           share: share,
           keyValueStore: keyValues,
+          localDatabase: FakeLocalDatabase(),
+          fileStore: FakeFileStore(),
           appInfo: FakeAppInfo(),
         ),
       ),
