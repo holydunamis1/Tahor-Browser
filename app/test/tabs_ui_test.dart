@@ -11,6 +11,7 @@ import 'package:tahorbrowser/core/models/tab_model.dart';
 import 'package:tahorbrowser/core/storage/storage_keys.dart';
 import 'package:tahorbrowser/widgets/browser/tab_card.dart';
 import 'package:tahorbrowser/widgets/browser/tab_count_button.dart';
+import 'package:tahorbrowser/widgets/core/feedback_banner.dart';
 import 'package:tahorbrowser/widgets/core/icon_chip.dart';
 import 'package:tahorbrowser/widgets/core/premium_card.dart';
 import 'package:tahorbrowser/widgets/core/primary_button.dart';
@@ -274,6 +275,10 @@ void main() {
       expect(copied, 'https://example.com');
       // First the provider, so a failure says which half is broken.
       expect(app.deps.feedback.value, const FeedbackMessage('Link copied'));
+      // A build error inside the banner would be swallowed otherwise.
+      expect(tester.takeException(), isNull);
+      expect(find.byType(FeedbackLayer), findsOneWidget);
+      expect(find.byType(FeedbackBanner), findsOneWidget);
       expect(find.text('Link copied'), findsOneWidget);
       // The message goes away by itself.
       await tester.pump(const Duration(seconds: 3));
