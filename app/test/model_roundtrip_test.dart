@@ -24,6 +24,7 @@ void main() {
         'themeMode': 'system',
         'searchEngineId': 'duckduckgo',
         'localeCode': null,
+        'startupMode': 'continueSession',
       });
     });
 

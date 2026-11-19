@@ -12,6 +12,7 @@ import 'package:tahorbrowser/widgets/browser/tab_card.dart';
 import 'package:tahorbrowser/widgets/browser/tab_count_button.dart';
 import 'package:tahorbrowser/widgets/core/icon_chip.dart';
 import 'package:tahorbrowser/widgets/core/premium_card.dart';
+import 'package:tahorbrowser/widgets/core/primary_button.dart';
 
 import 'support/fakes.dart';
 import 'support/test_app.dart';
@@ -107,7 +108,13 @@ void main() {
       );
       await tester.pumpAndSettle();
       await openTabs(tester);
-      expect(find.text('New tab'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(TabCard),
+          matching: find.text('New tab'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('b.example'), findsOneWidget);
       expect(find.text('Page C'), findsOneWidget);
     });
@@ -143,7 +150,7 @@ void main() {
     ) async {
       final TestApp app = await TestApp.pump(tester);
       await openTabs(tester);
-      await tester.tap(find.text('New tab'));
+      await tester.tap(find.widgetWithText(PrimaryButton, 'New tab'));
       await tester.pumpAndSettle();
       expect(app.deps.tabs.value.tabs.length, 2);
       expect(app.deps.tabs.activeTab.isBlank, isTrue);
@@ -254,6 +261,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey<String>('menu-copy-link')));
       await tester.pumpAndSettle();
+      // The copy finishes asynchronously; let its message appear.
+      await tester.pump();
+      await tester.pump();
       expect(copied, 'https://example.com');
       expect(find.text('Link copied'), findsOneWidget);
       // The message goes away by itself.
