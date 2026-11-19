@@ -97,14 +97,13 @@ void main() {
       expect(cards.last.isActive, isTrue);
     });
 
-    appTest('a card shows the page title, else its host, else New tab', (
+    appTest('a card shows the page title, and New tab when there is no page', (
       WidgetTester tester,
     ) async {
       final TestApp app = await TestApp.pump(tester);
       app.deps.tabs.openTab(url: Uri.parse('https://b.example'));
-      app.deps.tabs.openTab(url: Uri.parse('https://c.example'));
       app.deps.tabs.handleEvent(
-        TitleChanged(app.deps.tabs.activeTab.id, 'Page C'),
+        TitleChanged(app.deps.tabs.activeTab.id, 'Page B'),
       );
       await tester.pumpAndSettle();
       await openTabs(tester);
@@ -115,8 +114,16 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(find.text('Page B'), findsOneWidget);
       expect(find.text('b.example'), findsOneWidget);
-      expect(find.text('Page C'), findsOneWidget);
+    });
+
+    appTest('a page with no title shows its host', (WidgetTester tester) async {
+      final TestApp app = await TestApp.pump(tester);
+      app.deps.tabs.openTab(url: Uri.parse('https://b.example'));
+      await tester.pumpAndSettle();
+      await openTabs(tester);
+      expect(find.text('b.example'), findsOneWidget);
     });
 
     appTest('tapping a card shows that tab and returns to the page', (
@@ -262,6 +269,9 @@ void main() {
       await tester.tap(find.byKey(const ValueKey<String>('menu-copy-link')));
       await tester.pumpAndSettle();
       // The copy finishes asynchronously; let its message appear.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
       await tester.pump();
       await tester.pump();
       expect(copied, 'https://example.com');
