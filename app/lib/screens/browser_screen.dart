@@ -128,8 +128,9 @@ class _BrowserScreenState extends State<BrowserScreen> {
   }
 
   Future<void> _copyLink(AppDependencies deps, String url) async {
-    final bool copied = await copyToClipboard(url);
+    // Read before the await: the context may not be usable afterwards.
     final l10n = context.l10n;
+    final bool copied = await copyToClipboard(url);
     deps.feedback.show(
       copied ? l10n.feedbackLinkCopied : l10n.feedbackCopyFailed,
       isError: !copied,
