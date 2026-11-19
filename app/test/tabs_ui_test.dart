@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/core/models/app_settings.dart';
 import 'package:tahorbrowser/core/contracts/browser_engine.dart';
 import 'package:tahorbrowser/core/models/session_snapshot.dart';
+import 'package:tahorbrowser/core/providers/feedback_provider.dart';
 import 'package:tahorbrowser/core/models/tab_model.dart';
 import 'package:tahorbrowser/core/storage/storage_keys.dart';
 import 'package:tahorbrowser/widgets/browser/tab_card.dart';
@@ -262,19 +263,17 @@ void main() {
       WidgetTester tester,
     ) async {
       mockClipboard(tester);
-      await TestApp.pump(tester);
+      final TestApp app = await TestApp.pump(tester);
       await submit(tester, 'example.com');
       await tester.tap(chip('Menu'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey<String>('menu-copy-link')));
-      await tester.pumpAndSettle();
-      // The copy finishes asynchronously; let its message appear.
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-      await tester.pump();
-      await tester.pump();
+      for (int i = 0; i < 5; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
       expect(copied, 'https://example.com');
+      // First the provider, so a failure says which half is broken.
+      expect(app.deps.feedback.value, const FeedbackMessage('Link copied'));
       expect(find.text('Link copied'), findsOneWidget);
       // The message goes away by itself.
       await tester.pump(const Duration(seconds: 3));
