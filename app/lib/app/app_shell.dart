@@ -9,6 +9,7 @@ import '../core/theme/app_theme_data.dart';
 import '../core/theme/theme_builder.dart';
 import '../l10n/gen/app_localizations.dart';
 import '../widgets/core/app_page_route.dart';
+import '../widgets/core/feedback_banner.dart';
 import '../widgets/core/app_scroll_behavior.dart';
 import '../core/app_scope.dart';
 import 'router.dart';
@@ -119,7 +120,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
                       behavior: const AppScrollBehavior(),
                       child: ColoredBox(
                         color: theme.palette.bgPrimary,
-                        child: child!,
+                        child: FeedbackLayer(
+                          provider: deps.feedback,
+                          child: child!,
+                        ),
                       ),
                     ),
                   ),

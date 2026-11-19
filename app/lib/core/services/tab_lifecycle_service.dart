@@ -142,6 +142,30 @@ class TabLifecycleService {
     await _engine.dispose(tabId);
   }
 
+  /// Takes a preview of the showing tab so the tab grid has a fresh picture of
+  /// it. Gives up after [timeout]: opening the grid must not wait on a page.
+  Future<void> captureActiveThumbnail({
+    Duration timeout = const Duration(milliseconds: 700),
+  }) async {
+    final TabModel tab = _tabs.value.activeTab;
+    if (tab.isBlank || tab.isIncognito || !_tabs.value.isLive(tab.id)) {
+      return;
+    }
+    await _guard.run<void>(
+      'thumbnails',
+      () async {
+        final Uint8List? png = await _engine
+            .takeThumbnail(tab.id)
+            .timeout(timeout, onTimeout: () => null);
+        if (png != null) {
+          await _thumbnails.put(tab.id, png);
+        }
+      },
+      fallback: () {},
+      write: true,
+    );
+  }
+
   /// Saves a live tab's web view state and scroll position and records them
   /// on the tab. Returns true when the state itself was saved.
   Future<bool> _saveTab(TabModel tab) async {

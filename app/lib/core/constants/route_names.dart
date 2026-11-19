@@ -3,4 +3,5 @@
 abstract final class RouteNames {
   static const String browser = '/';
   static const String settings = '/settings';
+  static const String tabs = '/tabs';
 }

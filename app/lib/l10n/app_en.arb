@@ -216,5 +216,106 @@
   "settingsSearchEngine": "Search engine",
   "@settingsSearchEngine": {
     "description": "Settings row: choose the search engine used by the address bar."
+  },
+  "tabsTitle": "Tabs",
+  "@tabsTitle": {
+    "description": "Title of the screen that lists the open tabs."
+  },
+  "tabsNew": "New tab",
+  "@tabsNew": {
+    "description": "Button that opens a new empty tab."
+  },
+  "tabsCloseAll": "Close all",
+  "@tabsCloseAll": {
+    "description": "Action that closes every open tab."
+  },
+  "tabsCloseAllTitle": "Close all tabs?",
+  "@tabsCloseAllTitle": {
+    "description": "Title of the confirmation before closing every tab."
+  },
+  "tabsCloseAllBody": "Every open tab will be closed.",
+  "@tabsCloseAllBody": {
+    "description": "Body of the confirmation before closing every tab."
+  },
+  "tabsReopen": "Reopen closed tab",
+  "@tabsReopen": {
+    "description": "Action that brings back the tab closed last."
+  },
+  "tabsCloseTab": "Close tab",
+  "@tabsCloseTab": {
+    "description": "Label of the button that closes one tab."
+  },
+  "tabsOpenCount": "{count, plural, =1{1 tab open} other{{count} tabs open}}",
+  "@tabsOpenCount": {
+    "description": "Spoken label of the tab count button.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tabBlankTitle": "New tab",
+  "@tabBlankTitle": {
+    "description": "Title shown for a tab that has no page."
+  },
+  "tabPrivateLabel": "Private tab",
+  "@tabPrivateLabel": {
+    "description": "Label for a tab that is private."
+  },
+  "menuNewTab": "New tab",
+  "@menuNewTab": {
+    "description": "Browser menu item that opens a new tab."
+  },
+  "menuReopenTab": "Reopen closed tab",
+  "@menuReopenTab": {
+    "description": "Browser menu item that brings back the tab closed last."
+  },
+  "menuCopyLink": "Copy link",
+  "@menuCopyLink": {
+    "description": "Browser menu item that copies the page address."
+  },
+  "feedbackLinkCopied": "Link copied",
+  "@feedbackLinkCopied": {
+    "description": "Shown after the page address was copied."
+  },
+  "feedbackCopyFailed": "Couldn't copy the link",
+  "@feedbackCopyFailed": {
+    "description": "Shown when copying the page address failed."
+  },
+  "startPageTagline": "Fast, private browsing",
+  "@startPageTagline": {
+    "description": "Line under the name on the start page."
+  },
+  "startPageSearch": "Search or enter address",
+  "@startPageSearch": {
+    "description": "Text of the search field on the start page."
+  },
+  "persistenceWarning": "Your tabs and settings may not be saved. Storage on this device isn't working.",
+  "@persistenceWarning": {
+    "description": "Warning shown when saving to the device failed."
+  },
+  "persistenceDismiss": "Dismiss",
+  "@persistenceDismiss": {
+    "description": "Label of the button that hides the storage warning."
+  },
+  "settingsGeneral": "General",
+  "@settingsGeneral": {
+    "description": "Settings section title for general options."
+  },
+  "settingsStartup": "On start-up",
+  "@settingsStartup": {
+    "description": "Settings row: what the browser opens when it starts."
+  },
+  "startupContinue": "Continue where I left off",
+  "@startupContinue": {
+    "description": "Start-up choice: reopen the tabs that were open."
+  },
+  "startupStartPage": "Open the start page",
+  "@startupStartPage": {
+    "description": "Start-up choice: begin with one empty tab."
+  },
+  "dialogCancel": "Cancel",
+  "@dialogCancel": {
+    "description": "Button that dismisses a confirmation without doing anything."
   }
 }

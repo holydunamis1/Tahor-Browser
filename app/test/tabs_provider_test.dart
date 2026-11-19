@@ -485,4 +485,86 @@ void main() {
       expect(ids(), <String>['t0']);
     });
   });
+
+  group('closed tabs', () {
+    String open(String host, {bool incognito = false}) =>
+        tabs.openTab(url: Uri.parse('https://$host'), isIncognito: incognito)!;
+
+    test('nothing is offered before any tab was closed', () {
+      expect(tabs.canReopenClosed, isFalse);
+      expect(tabs.reopenClosedTab(), isNull);
+    });
+
+    test('a closed page tab can be reopened with its address and title', () {
+      final String id = open('a.com');
+      tabs.handleEvent(TitleChanged(id, 'A'));
+      tabs.closeTab(id);
+      expect(tabs.canReopenClosed, isTrue);
+      final String? back = tabs.reopenClosedTab();
+      expect(back, id);
+      expect(tabs.activeTab.url, 'https://a.com');
+      expect(tabs.activeTab.title, 'A');
+      expect(tabs.canReopenClosed, isFalse);
+    });
+
+    test('private and blank tabs are not remembered', () {
+      final String secret = open('p.com', incognito: true);
+      tabs.closeTab(secret);
+      tabs.openTab();
+      tabs.closeTab(tabs.activeTab.id);
+      expect(tabs.canReopenClosed, isFalse);
+    });
+
+    test('the newest closed tab comes back first', () {
+      final String a = open('a.com');
+      final String b = open('b.com');
+      tabs.closeTab(a);
+      tabs.closeTab(b);
+      expect(tabs.reopenClosedTab(), b);
+      expect(tabs.reopenClosedTab(), a);
+    });
+
+    test('only the last ten are remembered', () {
+      final List<String> ids = <String>[
+        for (int i = 0; i < 12; i++) open('s$i.com'),
+      ];
+      for (final String id in ids) {
+        tabs.closeTab(id);
+      }
+      int reopened = 0;
+      while (tabs.reopenClosedTab() != null) {
+        reopened++;
+      }
+      expect(reopened, TabsProvider.closedTabLimit);
+    });
+
+    test('close all keeps one blank tab and remembers the page tabs', () {
+      open('a.com');
+      open('b.com');
+      tabs.closeAllTabs();
+      expect(ids().length, 1);
+      expect(tabs.activeTab.isBlank, isTrue);
+      expect(tabs.value.live, <String>[tabs.activeTab.id]);
+      expect(tabs.canReopenClosed, isTrue);
+    });
+
+    test('reopening after close all replaces the blank tab', () {
+      open('a.com');
+      tabs.closeAllTabs();
+      tabs.reopenClosedTab();
+      expect(ids().length, 1);
+      expect(tabs.activeTab.url, 'https://a.com');
+      expect(tabs.value.live, <String>[tabs.activeTab.id]);
+    });
+
+    test('reopening is refused when the tab limit is reached', () {
+      final String a = open('a.com');
+      tabs.closeTab(a);
+      while (tabs.value.tabs.length < AppConstants.maxTabs) {
+        tabs.openTab();
+      }
+      expect(tabs.reopenClosedTab(), isNull);
+      expect(tabs.canReopenClosed, isTrue);
+    });
+  });
 }

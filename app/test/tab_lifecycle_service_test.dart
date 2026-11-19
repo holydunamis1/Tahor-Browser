@@ -218,4 +218,39 @@ void main() {
     await pumpEventQueue();
     expect(engine.calls.where((String c) => c == 'saveState t0').length, 1);
   });
+
+  group('previews for the tab list', () {
+    test('the showing page gets a preview', () async {
+      service.start();
+      await pumpEventQueue();
+      await service.captureActiveThumbnail();
+      expect(await thumbnails.get('t0'), bytes(99));
+    });
+
+    test('a blank tab gets none', () async {
+      service.start();
+      tabs.openTab();
+      await pumpEventQueue();
+      engine.thumbnails['t1'] = bytes(5);
+      await service.captureActiveThumbnail();
+      expect(await thumbnails.get('t1'), isNull);
+    });
+
+    test('a private tab gets none', () async {
+      service.start();
+      tabs.openTab(url: Uri.parse('https://p.example'), isIncognito: true);
+      await pumpEventQueue();
+      engine.thumbnails['t1'] = bytes(5);
+      await service.captureActiveThumbnail();
+      expect(await thumbnails.get('t1'), isNull);
+    });
+
+    test('a page with nothing to show leaves the old preview alone', () async {
+      service.start();
+      await thumbnails.put('t0', bytes(1));
+      engine.thumbnails.remove('t0');
+      await service.captureActiveThumbnail();
+      expect(await thumbnails.get('t0'), bytes(1));
+    });
+  });
 }
