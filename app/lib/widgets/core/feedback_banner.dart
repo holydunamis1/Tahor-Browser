@@ -32,7 +32,7 @@ class FeedbackBanner extends StatelessWidget {
           child: Padding(
             padding: AppInsets.symmetric(
               horizontal: Spacing.m,
-              vertical: Spacing.s + Spacing.xs,
+              vertical: Spacing.s,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
