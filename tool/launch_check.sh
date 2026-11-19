@@ -42,14 +42,22 @@ adb shell input text "en.m.wikipedia.org" || true
 adb shell input keyevent 66 || true
 sleep 12
 snap 03-page-loaded
-tap $((W * 86 / 100)) $((H * 91 / 100))
+# The tab count button is the middle chip of the bottom bar.
+tap $((W / 2)) $((H * 91 / 100))
+sleep 3
+snap 04-tab-list
+# New tab, the primary button at the bottom of the tab list.
+tap $((W / 2)) $((H * 89 / 100))
 sleep 2
-snap 04-menu
+snap 05-new-tab
+tap $((W * 90 / 100)) $((H * 91 / 100))
+sleep 2
+snap 06-menu
 adb shell input keyevent 4 || true
 sleep 1
 adb shell cmd uimode night yes || true
 sleep 3
-snap 05-phone-dark-mode
+snap 07-phone-dark-mode
 adb shell cmd uimode night no || true
 echo "SCREENSHOTS: $(ls shots | wc -l) taken at ${W}x${H}"
 
