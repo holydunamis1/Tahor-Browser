@@ -142,6 +142,15 @@ class TabsProvider extends ValueNotifier<TabsState> {
   final SearchEngine Function() _searchEngine;
   final TabIdGenerator _newId;
 
+  /// Tabs closed this session, newest last, for Reopen closed tab. Private
+  /// tabs are never kept.
+  final List<TabModel> _closed = <TabModel>[];
+
+  /// How many closed tabs are remembered.
+  static const int closedTabLimit = 10;
+
+  bool get canReopenClosed => _closed.isNotEmpty;
+
   /// Saved state waiting for a tab's view to be built; each is used once.
   final Map<String, Uint8List> _pendingRestore = <String, Uint8List>{};
 
@@ -182,6 +191,7 @@ class TabsProvider extends ValueNotifier<TabsState> {
     }
     unawaited(_engine.dispose(id));
     _pendingRestore.remove(id);
+    _remember(value.tabs[index]);
     final List<String> live = <String>[...value.live]..remove(id);
     final List<TabModel> tabs = <TabModel>[...value.tabs]..removeAt(index);
     final Map<String, TabRuntime> runtime = <String, TabRuntime>{
@@ -209,6 +219,58 @@ class TabsProvider extends ValueNotifier<TabsState> {
       runtime: runtime,
       live: live,
     );
+  }
+
+  void _remember(TabModel tab) {
+    if (tab.isIncognito || tab.isBlank) {
+      return;
+    }
+    _closed.add(tab);
+    while (_closed.length > closedTabLimit) {
+      _closed.removeAt(0);
+    }
+  }
+
+  /// Closes every tab and leaves one new blank tab. The tabs closed are
+  /// remembered for [reopenClosedTab], newest last.
+  void closeAllTabs() {
+    for (final TabModel tab in value.tabs) {
+      unawaited(_engine.dispose(tab.id));
+      _remember(tab);
+    }
+    _pendingRestore.clear();
+    final TabModel fresh = TabModel(id: _newId());
+    value = TabsState(
+      tabs: <TabModel>[fresh],
+      activeIndex: 0,
+      live: <String>[fresh.id],
+    );
+  }
+
+  /// Brings back the tab closed last and shows it. Returns its id, or null when
+  /// there is none or [AppConstants.maxTabs] tabs are open.
+  String? reopenClosedTab() {
+    if (_closed.isEmpty || value.tabs.length >= AppConstants.maxTabs) {
+      return null;
+    }
+    final TabModel tab = _closed.removeLast();
+    // A tab that is the only blank one is replaced, so reopening after Close
+    // all does not leave an empty tab behind.
+    final bool replaceBlank =
+        value.tabs.length == 1 && value.tabs.first.isBlank;
+    final List<TabModel> tabs = replaceBlank
+        ? <TabModel>[tab]
+        : <TabModel>[...value.tabs, tab];
+    if (replaceBlank) {
+      unawaited(_engine.dispose(value.tabs.first.id));
+    }
+    value = TabsState(
+      tabs: tabs,
+      activeIndex: tabs.length - 1,
+      runtime: replaceBlank ? const <String, TabRuntime>{} : value.runtime,
+      live: <String>[if (!replaceBlank) ...value.live, tab.id],
+    );
+    return tab.id;
   }
 
   void selectTab(String id) {

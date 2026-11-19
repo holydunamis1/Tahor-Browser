@@ -28,6 +28,23 @@ class SettingsScreen extends StatelessWidget {
         builder: (BuildContext context, AppSettings settings, Widget? _) {
           return ListView(
             children: <Widget>[
+              SectionHeader(l10n.settingsGeneral),
+              SettingChoiceTile<StartupMode>(
+                title: l10n.settingsStartup,
+                glyph: AppIcons.home,
+                value: settings.startupMode,
+                choices: <SettingChoice<StartupMode>>[
+                  SettingChoice<StartupMode>(
+                    value: StartupMode.continueSession,
+                    label: l10n.startupContinue,
+                  ),
+                  SettingChoice<StartupMode>(
+                    value: StartupMode.startPage,
+                    label: l10n.startupStartPage,
+                  ),
+                ],
+                onChanged: deps.settings.setStartupMode,
+              ),
               SectionHeader(l10n.settingsAppearance),
               SettingChoiceTile<AppThemeMode>(
                 title: l10n.settingsTheme,

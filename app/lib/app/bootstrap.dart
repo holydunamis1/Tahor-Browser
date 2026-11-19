@@ -1,7 +1,9 @@
 import '../core/app_scope.dart';
 import '../core/constants/app_constants.dart';
 import '../core/error/error_taxonomy.dart';
+import '../core/models/app_settings.dart';
 import '../core/error/global_error_handler.dart';
+import '../core/providers/feedback_provider.dart';
 import '../core/providers/locale_provider.dart';
 import '../core/providers/settings_provider.dart';
 import '../core/providers/tabs_provider.dart';
@@ -44,11 +46,12 @@ Future<AppDependencies> bootstrap({
   );
   services.engine.setNavigationPolicy(const UrlPolicyService().decide);
 
+  final ThumbnailCache thumbnails = ThumbnailCache(services.fileStore);
   final TabLifecycleService lifecycle = TabLifecycleService(
     tabs: tabs,
     engine: services.engine,
     states: WebViewStateStore(services.fileStore),
-    thumbnails: ThumbnailCache(services.fileStore),
+    thumbnails: thumbnails,
     guard: guard,
   );
   final SessionRestoreService sessionRestore = SessionRestoreService(
@@ -58,7 +61,9 @@ Future<AppDependencies> bootstrap({
     guard: guard,
   );
   // Restore before saving starts, so the restored tabs are not written back.
-  await sessionRestore.restore();
+  if (settings.value.startupMode == StartupMode.continueSession) {
+    await sessionRestore.restore();
+  }
   lifecycle.start();
   sessionRestore.start();
 
@@ -74,5 +79,7 @@ Future<AppDependencies> bootstrap({
     sessionRestore: sessionRestore,
     tabLifecycle: lifecycle,
     persistenceGuard: guard,
+    thumbnails: thumbnails,
+    feedback: FeedbackProvider(),
   );
 }

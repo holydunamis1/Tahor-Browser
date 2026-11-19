@@ -4,12 +4,14 @@ import 'contracts/app_info.dart';
 import 'contracts/external_launcher.dart';
 import 'contracts/share.dart';
 import 'error/global_error_handler.dart';
+import 'providers/feedback_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/tabs_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/session_restore_service.dart';
 import 'services/tab_lifecycle_service.dart';
+import 'services/thumbnail_cache.dart';
 import 'storage/persistence_guard.dart';
 
 /// Everything the screens need, built once at start-up. It holds contracts
@@ -28,6 +30,8 @@ class AppDependencies {
     required this.sessionRestore,
     required this.tabLifecycle,
     required this.persistenceGuard,
+    required this.thumbnails,
+    required this.feedback,
   });
 
   final SettingsProvider settings;
@@ -41,11 +45,14 @@ class AppDependencies {
   final SessionRestoreService sessionRestore;
   final TabLifecycleService tabLifecycle;
   final PersistenceGuard persistenceGuard;
+  final ThumbnailCache thumbnails;
+  final FeedbackProvider feedback;
 
   /// Stops the background work. Called when the app goes away.
   void dispose() {
     sessionRestore.dispose();
     tabLifecycle.dispose();
+    feedback.dispose();
   }
 }
 

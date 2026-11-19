@@ -5,6 +5,15 @@ import '../constants/app_constants.dart';
 /// The theme the person chose. [system] follows the phone.
 enum AppThemeMode { system, light, dark }
 
+/// What the browser opens when the app starts.
+enum StartupMode {
+  /// The tabs that were open, each where it was left. The default.
+  continueSession,
+
+  /// One blank tab with the start page.
+  startPage,
+}
+
 const Object _keep = Object();
 
 /// Everything the person can change in Settings, persisted as one JSON value.
@@ -17,6 +26,7 @@ class AppSettings {
     this.themeMode = AppThemeMode.system,
     this.searchEngineId = AppConstants.defaultSearchEngineId,
     this.localeCode,
+    this.startupMode = StartupMode.continueSession,
   });
 
   /// The version written into every saved value.
@@ -30,11 +40,14 @@ class AppSettings {
   /// A language code such as `de`, or null to follow the phone.
   final String? localeCode;
 
+  final StartupMode startupMode;
+
   /// Reads a saved value. Never throws: anything unusable becomes a default.
   factory AppSettings.fromJson(Map<String, Object?> json) {
     final Object? mode = json['themeMode'];
     final Object? engine = json['searchEngineId'];
     final Object? locale = json['localeCode'];
+    final Object? startup = json['startupMode'];
     return AppSettings(
       themeMode: mode is String
           ? (AppThemeMode.values.asNameMap()[mode] ?? AppThemeMode.system)
@@ -43,6 +56,10 @@ class AppSettings {
           ? engine
           : AppConstants.defaultSearchEngineId,
       localeCode: locale is String && locale.isNotEmpty ? locale : null,
+      startupMode: startup is String
+          ? (StartupMode.values.asNameMap()[startup] ??
+                StartupMode.continueSession)
+          : StartupMode.continueSession,
     );
   }
 
@@ -57,6 +74,7 @@ class AppSettings {
     'themeMode': themeMode.name,
     'searchEngineId': searchEngineId,
     'localeCode': localeCode,
+    'startupMode': startupMode.name,
   };
 
   /// A copy with changes. Pass `localeCode: null` to go back to the phone's
@@ -65,6 +83,7 @@ class AppSettings {
     AppThemeMode? themeMode,
     String? searchEngineId,
     Object? localeCode = _keep,
+    StartupMode? startupMode,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -72,6 +91,7 @@ class AppSettings {
       localeCode: identical(localeCode, _keep)
           ? this.localeCode
           : localeCode as String?,
+      startupMode: startupMode ?? this.startupMode,
     );
   }
 
@@ -80,12 +100,14 @@ class AppSettings {
       other is AppSettings &&
       other.themeMode == themeMode &&
       other.searchEngineId == searchEngineId &&
-      other.localeCode == localeCode;
+      other.localeCode == localeCode &&
+      other.startupMode == startupMode;
 
   @override
-  int get hashCode => Object.hash(themeMode, searchEngineId, localeCode);
+  int get hashCode =>
+      Object.hash(themeMode, searchEngineId, localeCode, startupMode);
 
   @override
   String toString() =>
-      'AppSettings(theme: ${themeMode.name}, engine: $searchEngineId, locale: $localeCode)';
+      'AppSettings(theme: ${themeMode.name}, engine: $searchEngineId, locale: $localeCode, startup: ${startupMode.name})';
 }

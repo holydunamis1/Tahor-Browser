@@ -29,6 +29,9 @@ class SettingsProvider extends ValueNotifier<AppSettings> {
   Future<void> setSearchEngine(String id) =>
       _change((AppSettings s) => s.copyWith(searchEngineId: id));
 
+  Future<void> setStartupMode(StartupMode mode) =>
+      _change((AppSettings s) => s.copyWith(startupMode: mode));
+
   /// Pass null to follow the phone's language.
   Future<void> setLocale(String? code) =>
       _change((AppSettings s) => s.copyWith(localeCode: code));
