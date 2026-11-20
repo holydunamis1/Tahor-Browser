@@ -96,6 +96,7 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-88 | Integration tests serve their fixture pages from a loopback HTTP server on the device (`FixtureServer`), not from `data:` addresses or assets | The URL policy refuses a `data:` address as a page, and fixtures must not ship in the app | B13 |
 | D-89 | `integration-android` and the iOS `ios-verify` workflow are manual only; neither has a push trigger. Integration tests run at milestone exits and when a batch touches the engine, tabs or storage | Each run builds the whole app (Android about 15 minutes; iOS draws on the 500 free macOS minutes) | B13 |
 | D-90 | `integration-android` builds the debug app before the emulator starts | The first run failed in Gradle inside the emulator step (four Kotlin 2.2.21 artifacts not served by the plugin portal) before any test ran; building first caches the dependencies and separates a build failure from a test failure | B13 |
+| D-91 | `update-lock.yml` (manual, never on main) resolves a branch's dependencies and commits `pubspec.lock` to it | A pin change needs a regenerated lock and pub.dev cannot be reached from the automation sandbox | B13 |
 
 ## Verified pins
 

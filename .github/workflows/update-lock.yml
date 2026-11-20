@@ -1,0 +1,52 @@
+name: update-lock
+
+# Manual. Resolves the dependencies of the branch it is run on and commits the
+# resulting pubspec.lock to that branch. Used after a pin in app/pubspec.yaml
+# changes, because pub.dev cannot be reached from the automation sandbox.
+# Never run it on main: main only receives merged batches.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Refuse to run on main
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "update-lock must not run on main"; exit 1
+          fi
+
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read the Flutter version pin
+        id: fv
+        run: echo "version=$(tr -d '[:space:]' < tool/flutter_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ steps.fv.outputs.version }}
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: app
+        run: bash ../tool/ci_run.sh pub-get flutter pub get
+
+      - name: Commit the lock file when it changed
+        run: |
+          if git diff --quiet -- app/pubspec.lock; then
+            echo "pubspec.lock is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/pubspec.lock
+          git commit -q -m "update pubspec.lock"
+          git push
