@@ -93,6 +93,8 @@ Every decision is recorded here with its reason. Decisions D-01 to D-30 come fro
 | D-85 | Messages such as Link copied go through a `FeedbackProvider` shown by one `FeedbackLayer` above the navigator, at the top under the status bar, and disappear after 2.5 seconds | Any screen can give explicit feedback without owning an overlay; the top position cannot cover the bottom bar or the keyboard | B12 |
 | D-86 | The start-up choice is Continue where I left off (default) or Open the start page; the second skips restoring but the next change overwrites the saved tabs | Blueprint B12 | B12 |
 | D-87 | The start page is the name once, a one-line tagline and a search field that focuses the address bar. It makes no claim about ad blocking until M3 ships it; the shield mark is a stand-in until the logo options are chosen | Marketing must match what ships; the owner picks the logo later | B12 |
+| D-88 | Integration tests serve their fixture pages from a loopback HTTP server on the device (`FixtureServer`), not from `data:` addresses or assets | The URL policy refuses a `data:` address as a page, and fixtures must not ship in the app | B13 |
+| D-89 | `integration-android` and the iOS `ios-verify` workflow are manual only; neither has a push trigger. Integration tests run at milestone exits and when a batch touches the engine, tabs or storage | Each run builds the whole app (Android about 15 minutes; iOS draws on the 500 free macOS minutes) | B13 |
 
 ## Verified pins
 

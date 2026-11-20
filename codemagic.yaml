@@ -1,0 +1,37 @@
+# iOS builds. Started by hand from Codemagic: there is no `triggering` section,
+# so nothing runs on a push. The free plan gives 500 macOS minutes a month, so
+# this workflow is run at the iOS checkpoints only (see docs/BLUEPRINT.md).
+workflows:
+  ios-verify:
+    name: iOS verify (unsigned simulator build and integration tests)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: 3.47.7 # keep equal to tool/flutter_version.txt
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Resolve dependencies
+        script: cd app && flutter pub get
+      - name: Generate localizations
+        script: cd app && flutter gen-l10n
+      - name: Install CocoaPods dependencies, only if the project has a Podfile
+        script: |
+          cd app/ios
+          if [ -f Podfile ]; then pod install; fi
+      - name: Build for the simulator without signing
+        script: cd app && flutter build ios --simulator --no-codesign
+      - name: Boot an iPhone simulator
+        script: |
+          set -euo pipefail
+          DEVICE=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          xcrun simctl boot "$DEVICE" || true
+          echo "SIM_ID=$DEVICE" >> "$CM_ENV"
+      - name: Run the integration tests
+        script: cd app && flutter test integration_test -d "$SIM_ID"
+      - name: Take a screenshot
+        script: |
+          mkdir -p screenshots
+          xcrun simctl io booted screenshot screenshots/after-tests.png
+    artifacts:
+      - screenshots/*.png
