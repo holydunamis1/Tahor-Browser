@@ -47,6 +47,10 @@ jobs:
         working-directory: app
         run: bash ../tool/ci_run.sh gen-l10n flutter gen-l10n
 
+      - name: Build the debug app once, so its dependencies are cached
+        working-directory: app
+        run: bash ../tool/ci_run.sh build-debug flutter build apk --debug --target-platform android-x64
+
       - name: Enable hardware acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
