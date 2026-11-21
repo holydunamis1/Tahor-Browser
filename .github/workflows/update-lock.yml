@@ -45,7 +45,7 @@ jobs:
 
       - name: Commit the lock file when it changed
         run: |
-          if git diff --quiet -- app/pubspec.lock tools/blocklist/pubspec.lock; then
+          if [ -z "$(git status --porcelain -- app/pubspec.lock tools/blocklist/pubspec.lock)" ]; then
             echo "The lock files are already up to date."
             exit 0
           fi
