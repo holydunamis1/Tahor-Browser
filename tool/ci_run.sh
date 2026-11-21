@@ -23,7 +23,7 @@ path, label, rc, level = sys.argv[1:5]
 text = open(path, encoding="utf-8", errors="replace").read().replace("\r", "\n")
 progress = re.compile(r"^\s*\[[= >]*\]|^\s*(Loading|Fetch remote|Computing updates|Downloading|Installing) ")
 lines = [l.rstrip() for l in text.split("\n") if l.strip() and not progress.match(l)]
-key = re.compile(r"FAILURE|What went wrong|Execution failed|error:|error •|Error|Exception|e: |not found|Could not|Unresolved|Caused by|BUILD FAILED", re.I)
+key = re.compile(r"KGP|Kotlin Gradle Plugin|WARNING:|FAILURE|What went wrong|Execution failed|error:|error •|Error|Exception|e: |not found|Could not|Unresolved|Caused by|BUILD FAILED", re.I)
 
 
 def esc(s):
