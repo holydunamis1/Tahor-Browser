@@ -48,6 +48,8 @@ jobs:
 
       - name: Build the release APK for x86_64
         working-directory: app
+        env:
+          CI_SHOW: '1'
         run: bash ../tool/ci_run.sh build-x64 flutter build apk --release --target-platform android-x64
 
       - name: Enable hardware acceleration
