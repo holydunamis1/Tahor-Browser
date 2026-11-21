@@ -39,14 +39,18 @@ jobs:
         working-directory: app
         run: bash ../tool/ci_run.sh pub-get flutter pub get
 
+      - name: Resolve the blocklist tool's dependencies
+        working-directory: tools/blocklist
+        run: bash ../../tool/ci_run.sh pub-get-tools dart pub get
+
       - name: Commit the lock file when it changed
         run: |
-          if git diff --quiet -- app/pubspec.lock; then
-            echo "pubspec.lock is already up to date."
+          if git diff --quiet -- app/pubspec.lock tools/blocklist/pubspec.lock; then
+            echo "The lock files are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/pubspec.lock
+          git add app/pubspec.lock tools/blocklist/pubspec.lock
           git commit -q -m "update pubspec.lock"
           git push

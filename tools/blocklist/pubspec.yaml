@@ -1,0 +1,12 @@
+name: tahor_blocklist_tools
+description: Converts ABP-syntax filter lists to Tahor's canonical blocklist format and signs the result.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  cryptography: 2.9.0
+
+dev_dependencies:
+  test: ^1.26.0
