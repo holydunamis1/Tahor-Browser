@@ -115,7 +115,9 @@ void main() {
 
     test('patterns too generic to block safely', () {
       expect(dropped('ad'), <String, int>{'pattern too generic': 1});
-      expect(dropped('/ad/'), <String, int>{'pattern too generic': 1});
+      expect(dropped('/ad'), <String, int>{'pattern too generic': 1});
+      // Slashes at both ends make it a regular expression in this syntax.
+      expect(dropped('/ad/'), <String, int>{'regular expression': 1});
     });
 
     test('non-ASCII patterns', () {
