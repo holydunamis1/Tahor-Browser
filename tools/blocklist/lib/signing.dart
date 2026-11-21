@@ -17,18 +17,15 @@ final Ed25519 _ed25519 = Ed25519();
 
 /// The Ed25519 public key for a 32-byte private [seed].
 Future<Uint8List> publicKeyFor(Uint8List seed) async {
-  final SimplePublicKey key = await (await _ed25519.newKeyPairFromSeed(
-    seed,
-  )).extractPublicKey();
+  final SimplePublicKey key = await (await _ed25519.newKeyPairFromSeed(seed))
+      .extractPublicKey();
   return Uint8List.fromList(key.bytes);
 }
 
 /// Lower-case hex SHA-256 of [bytes].
 Future<String> sha256Hex(List<int> bytes) async {
   final Hash hash = await Sha256().hash(bytes);
-  return hash.bytes
-      .map((int b) => b.toRadixString(16).padLeft(2, '0'))
-      .join();
+  return hash.bytes.map((int b) => b.toRadixString(16).padLeft(2, '0')).join();
 }
 
 /// Builds the manifest for [list] and signs its text with [seed].

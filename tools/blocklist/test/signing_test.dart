@@ -5,7 +5,8 @@ import 'package:tahor_blocklist_tools/signing.dart';
 import 'package:test/test.dart';
 
 Uint8List hex(String s) => Uint8List.fromList(<int>[
-  for (int i = 0; i < s.length; i += 2) int.parse(s.substring(i, i + 2), radix: 16),
+  for (int i = 0; i < s.length; i += 2)
+    int.parse(s.substring(i, i + 2), radix: 16),
 ]);
 
 String toHex(List<int> b) =>
@@ -17,12 +18,15 @@ void main() {
     '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60',
   );
 
-  test('the public key for the RFC 8032 test seed matches the standard', () async {
-    expect(
-      toHex(await publicKeyFor(seed)),
-      'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
-    );
-  });
+  test(
+    'the public key for the RFC 8032 test seed matches the standard',
+    () async {
+      expect(
+        toHex(await publicKeyFor(seed)),
+        'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+      );
+    },
+  );
 
   test('SHA-256 matches the standard answer for "abc"', () async {
     expect(
@@ -32,7 +36,9 @@ void main() {
   });
 
   group('a signed manifest', () {
-    final Uint8List list = Uint8List.fromList(utf8.encode('block|x|*|*|*|*\nhide|*|.a\n'));
+    final Uint8List list = Uint8List.fromList(
+      utf8.encode('block|x|*|*|*|*\nhide|*|.a\n'),
+    );
 
     Future<SignedManifest> sign({int version = 3}) => signList(
       list: list,
@@ -54,12 +60,18 @@ void main() {
 
     test('verifies with the matching public key', () async {
       final SignedManifest s = await sign();
-      expect(await verifyManifest(s.manifestJson, s.signature, s.publicKey), isTrue);
+      expect(
+        await verifyManifest(s.manifestJson, s.signature, s.publicKey),
+        isTrue,
+      );
     });
 
     test('is rejected when the manifest text is changed', () async {
       final SignedManifest s = await sign();
-      final String tampered = s.manifestJson.replaceFirst('"version":3', '"version":4');
+      final String tampered = s.manifestJson.replaceFirst(
+        '"version":3',
+        '"version":4',
+      );
       expect(await verifyManifest(tampered, s.signature, s.publicKey), isFalse);
     });
 
@@ -75,8 +87,11 @@ void main() {
       expect(await verifyManifest(s.manifestJson, s.signature, other), isFalse);
     });
 
-    test('signing twice gives the same signature (Ed25519 is deterministic)', () async {
-      expect((await sign()).signature, (await sign()).signature);
-    });
+    test(
+      'signing twice gives the same signature (Ed25519 is deterministic)',
+      () async {
+        expect((await sign()).signature, (await sign()).signature);
+      },
+    );
   });
 }

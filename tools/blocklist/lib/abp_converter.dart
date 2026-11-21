@@ -59,7 +59,10 @@ const Map<String, String> _typeAliases = <String, String>{
 };
 
 /// Options that change nothing for blocking and are ignored.
-const Set<String> _ignoredOptions = <String>{'important', 'first-party-ignored'};
+const Set<String> _ignoredOptions = <String>{
+  'important',
+  'first-party-ignored',
+};
 
 /// Selector parts that need an engine this app does not have.
 final RegExp _extendedSelector = RegExp(
@@ -98,7 +101,11 @@ String? _convertLine(String line, ConvertResult result) {
   }
   final int cosmetic = line.indexOf('##');
   if (cosmetic >= 0) {
-    return _convertHide(line.substring(0, cosmetic), line.substring(cosmetic + 2), result);
+    return _convertHide(
+      line.substring(0, cosmetic),
+      line.substring(cosmetic + 2),
+      result,
+    );
   }
   return _convertNetwork(line, result);
 }
@@ -162,9 +169,15 @@ String? _convertNetwork(String original, ConvertResult result) {
   if (regex == null) {
     return null;
   }
-  final String types = parsed.types.isEmpty ? '*' : (parsed.types.toList()..sort()).join(',');
-  final String ifDomain = parsed.ifDomains.isEmpty ? '*' : parsed.ifDomains.join(',');
-  final String unless = parsed.unlessDomains.isEmpty ? '*' : parsed.unlessDomains.join(',');
+  final String types = parsed.types.isEmpty
+      ? '*'
+      : (parsed.types.toList()..sort()).join(',');
+  final String ifDomain = parsed.ifDomains.isEmpty
+      ? '*'
+      : parsed.ifDomains.join(',');
+  final String unless = parsed.unlessDomains.isEmpty
+      ? '*'
+      : parsed.unlessDomains.join(',');
   return '${allow ? 'allow' : 'block'}|$regex|$types|${parsed.party}|$ifDomain|$unless';
 }
 
@@ -266,7 +279,18 @@ String? _toRegex(String pattern, ConvertResult result) {
         out.write('.*');
       case '^':
         out.write(last && !endAnchor ? r'[/:?]' : r'[^a-zA-Z0-9_.%-]');
-      case '.' || '+' || '?' || '(' || ')' || '[' || ']' || '{' || '}' || r'\' || r'$' || '|':
+      case '.' ||
+          '+' ||
+          '?' ||
+          '(' ||
+          ')' ||
+          '[' ||
+          ']' ||
+          '{' ||
+          '}' ||
+          r'\' ||
+          r'$' ||
+          '|':
         out.write('\\$c');
       default:
         out.write(c);
@@ -291,7 +315,9 @@ List<String> selectSeed(
   required int maxBlocks,
   required int maxHides,
 }) {
-  final RegExp hostOnly = RegExp(r'^block\|\^\[\^:\]\+://\+\(\[\^:/\]\+\\\.\)\?[a-z0-9\\.-]+\[/:\?\]\|\*\|(third|\*)\|\*\|\*$');
+  final RegExp hostOnly = RegExp(
+    r'^block\|\^\[\^:\]\+://\+\(\[\^:/\]\+\\\.\)\?[a-z0-9\\.-]+\[/:\?\]\|\*\|(third|\*)\|\*\|\*$',
+  );
   final List<String> blocks = <String>[];
   final List<String> hides = <String>[];
   for (final String rule in all) {

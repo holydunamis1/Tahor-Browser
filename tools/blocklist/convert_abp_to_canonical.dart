@@ -31,7 +31,9 @@ void main(List<String> args) {
     }
   }
   if (outFull == null || outSeed == null || inputs.isEmpty) {
-    stderr.writeln('Usage: convert_abp_to_canonical.dart --out-full F --out-seed S list...');
+    stderr.writeln(
+      'Usage: convert_abp_to_canonical.dart --out-full F --out-seed S list...',
+    );
     exit(64);
   }
 
@@ -54,8 +56,11 @@ void main(List<String> args) {
       '# Tahor canonical blocklist ($kind)\n'
       '# Converted from EasyList and EasyPrivacy; see SOURCES.md for licences.\n'
       '# Rules: $count\n';
-  File(outFull).writeAsStringSync('${header('full', result.rules.length)}${result.rules.join('\n')}\n');
-  File(outSeed).writeAsStringSync('${header('seed', seed.length)}${seed.join('\n')}\n');
+  File(outFull).writeAsStringSync(
+    '${header('full', result.rules.length)}${result.rules.join('\n')}\n',
+  );
+  File(outSeed)
+      .writeAsStringSync('${header('seed', seed.length)}${seed.join('\n')}\n');
 
   stdout.writeln(
     '{"kept":${result.rules.length},"block":${result.blockCount},'

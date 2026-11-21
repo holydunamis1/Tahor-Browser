@@ -32,7 +32,10 @@ Future<void> main(List<String> args) async {
     }
   }
   final String? key = Platform.environment['BLOCKLIST_SIGNING_KEY_B64'];
-  if (listPath == null || outManifest == null || outSig == null || key == null) {
+  if (listPath == null ||
+      outManifest == null ||
+      outSig == null ||
+      key == null) {
     stderr.writeln('Missing arguments or BLOCKLIST_SIGNING_KEY_B64.');
     exit(64);
   }
@@ -51,7 +54,11 @@ Future<void> main(List<String> args) async {
   }
 
   final Uint8List list = File(listPath).readAsBytesSync();
-  final Map<String, int> counts = <String, int>{'block': 0, 'allow': 0, 'hide': 0};
+  final Map<String, int> counts = <String, int>{
+    'block': 0,
+    'allow': 0,
+    'hide': 0,
+  };
   for (final String line in const LineSplitter().convert(utf8.decode(list))) {
     for (final String kind in counts.keys) {
       if (line.startsWith('$kind|')) {
