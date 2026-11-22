@@ -54,7 +54,7 @@ jobs:
       - name: Sign the full list
         working-directory: tools/blocklist
         env:
-          BLOCKLIST_SIGNING_KEY_B64: probe
+          BLOCKLIST_SIGNING_KEY_B64: ${{ secrets.GITHUB_TOKEN }}
           CI_SHOW: '1'
         run: |
           set -euo pipefail
