@@ -45,4 +45,7 @@ dev_dependencies:
 
 flutter:
   generate: true
+
+  assets:
+    - assets/blocklist/
   uses-material-design: false
