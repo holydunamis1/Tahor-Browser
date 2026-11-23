@@ -42,8 +42,6 @@ void main(List<String> args) {
   File(outFull).writeAsStringSync(
     '${header('full', result.rules.length)}${result.rules.join('\n')}\n',
   );
-  File(outSeed)
-      .writeAsStringSync('${header('seed', seed.length)}${seed.join('\n')}\n');
 
   stdout.writeln(
     '{"kept":${result.rules.length},"block":${result.blockCount},'
