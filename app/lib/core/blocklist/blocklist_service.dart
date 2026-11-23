@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 
@@ -200,10 +199,10 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
   Future<RefreshOutcome> refresh({bool background = false}) async {
     try {
       final HttpResult manifestResponse = await http.get(
-        Uri.parse(AppConstants.blocklistManifest),
+        Uri.parse(AppUrls.blocklistManifest),
       );
       final HttpResult sigResponse = await http.get(
-        Uri.parse(AppConstants.blocklistSignature),
+        Uri.parse(AppUrls.blocklistSignature),
       );
       if (!manifestResponse.isOk || !sigResponse.isOk) {
         return _fail(
@@ -233,7 +232,7 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
       final BlocklistManifest manifest = manifestCheck.manifest!;
 
       final HttpResult listResponse = await http.get(
-        Uri.parse(AppConstants.blocklistLatest),
+        Uri.parse(AppUrls.blocklistLatest),
         timeout: const Duration(seconds: 90),
       );
       if (!listResponse.isOk) {

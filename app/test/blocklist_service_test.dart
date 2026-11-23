@@ -44,9 +44,9 @@ void main() {
       version: version,
       minAppVersion: minApp,
     );
-    http.answer(AppConstants.blocklistManifest, utf8.encode(m.json));
-    http.answer(AppConstants.blocklistSignature, utf8.encode(m.signature));
-    http.answer(AppConstants.blocklistLatest, bytes(listServed ?? list));
+    http.answer(AppUrls.blocklistManifest, utf8.encode(m.json));
+    http.answer(AppUrls.blocklistSignature, utf8.encode(m.signature));
+    http.answer(AppUrls.blocklistLatest, bytes(listServed ?? list));
   }
 
   BlocklistService make({FakeFileStore? store}) => BlocklistService(
@@ -132,7 +132,7 @@ void main() {
       await service.initialize();
       await publish(version: 1);
       expect(await service.refresh(), RefreshOutcome.upToDate);
-      expect(http.requested, isNot(contains(AppConstants.blocklistLatest)));
+      expect(http.requested, isNot(contains(AppUrls.blocklistLatest)));
       expect(service.value.version, 1);
       expect(service.value.checkedAt, isNotNull);
     });
