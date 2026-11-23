@@ -43,7 +43,7 @@ A built-in password manager, remote search suggestions, bookmark import and expo
 - Ad blocking works on ordinary sites; in-stream video ads are not blocked. No count of blocked items is claimed because the platform does not report one.
 - Dangerous-site warnings come from Google (Android) and Apple (iOS); the policy says visited addresses are checked against their lists.
 - Private tabs on Android do not fully separate cookies from normal tabs; the app says so in plain words.
-- The first launch downloads the ad-blocking list from our website once, which sees the device's address like any web request.
+- The ad-blocking list ships inside the app, so blocking is complete on first launch and offline. The app contacts our website only when the person refreshes the list (or turns on the weekly refresh), and that request sees the device's address like any web request.
 
 ## 2. Verified decisions
 
@@ -234,7 +234,7 @@ ARB files at `lib/l10n/app_<code>.arb`; English keys grow in every batch and the
 
 ### Size policy
 
-Code ships in the binary and data downloads on first use (Google Play and Apple forbid downloading executable code). The browser engine is the system's. The ad-blocking list ships as a compact seed and the full signed list downloads once from the website. Translation models (about 30 MB each) download from Google on demand and add nothing to the app size. The Android barcode model is unbundled (about 600 KB instead of 3 to 10 MB). iOS scanning uses Apple's own scanner at no cost. pdfrx 2.6.5 ships its web-only WASM files for the web platform only, so mobile builds never contain them and nothing needs removing (D-64); PDFium stays because native code cannot be downloaded. Sideload APKs are built `--split-per-abi`. `tool/check_size.sh` fails any merge that grows a per-ABI APK or the IPA by more than 3% over `docs/size-baseline.json`, and every release build uploads an `--analyze-size` report. No second repository is needed: the full blocklist is published into `website/blocklist/` by `publish-blocklist.yml`.
+Code ships in the binary and data downloads on first use (Google Play and Apple forbid downloading executable code). The browser engine is the system's. The full signed ad-blocking list ships inside the app (about 1.2 MB compressed, inside the 3% size ratchet) and is verified at every start; updates download as data from our website. Translation models (about 30 MB each) download from Google on demand and add nothing to the app size. The Android barcode model is unbundled (about 600 KB instead of 3 to 10 MB). iOS scanning uses Apple's own scanner at no cost. pdfrx 2.6.5 ships its web-only WASM files for the web platform only, so mobile builds never contain them and nothing needs removing (D-64); PDFium stays because native code cannot be downloaded. Sideload APKs are built `--split-per-abi`. `tool/check_size.sh` fails any merge that grows a per-ABI APK or the IPA by more than 3% over `docs/size-baseline.json`, and every release build uploads an `--analyze-size` report. No second repository is needed: the full blocklist is published into `website/blocklist/` by `publish-blocklist.yml`.
 
 ### Performance targets
 
@@ -361,7 +361,7 @@ After the app is complete (D-44), run B41 and the privacy and support pages of B
 
 **Tabs and sessions (M2).** Multiple tabs, tab grid with thumbnails, new tab, close, close all, reopen closed tab; session restore of tabs, each tab's history and scroll after the app is closed or killed; hibernation of idle tabs; start-up choice (continue or start page); start page.
 
-**Ad blocking (M3).** On-device network blocking and element hiding; shield with per-site exception; signed blocklist (compact seed in the app, full list downloaded once from the website, manual or optional weekly refresh); a screen with the list version and honest limits.
+**Ad blocking (M3).** On-device network blocking and element hiding; shield with per-site exception; signed blocklist (the full list bundled in the app and verified at start-up, manual or optional weekly refresh from the website); a screen with the list version and honest limits.
 
 **Web compatibility (M4).** Site dialogs; new windows as tabs; per-site camera, microphone and location prompts; file uploads; fullscreen video; external-app links; PDF viewer; HTTPS-only with a fallback page and certificate warnings; mobile and desktop site per site; system-browser handoff banner; site settings per site and a list of all; renderer-crash recovery; dangerous-site warnings with a switch (engine setting in M1, switch in M6).
 
@@ -717,12 +717,12 @@ Run: branch `batch/b13`, commit `b13: integration harness and iOS verify`. Then 
 
 ### B14. Blocklist assets, tools, signing
 
-- `app/assets/blocklist/canonical_blocklist.txt`. Contains: the first-launch seed in the grammar of section 4 (the highest-impact ad and tracker hosts, capped by the converter's seed limit), with a header comment (version, date, sources). Cosmetic rules live in the same file as `hide|` lines, so there is one parser. The full list is published on the website and downloaded on first launch. Used by: blocklist\_service.
+- `app/assets/blocklist/canonical_blocklist.txt`. Contains: the full converted list in the grammar of section 4, identical to the one published on the website at build time, with a header comment (version, date, sources). Cosmetic rules live in the same file as `hide|` lines, so there is one parser. The full list is published on the website and downloaded on first launch. Used by: blocklist\_service.
 - `app/assets/blocklist/manifest.json`. Contains: a monotonic list version, sha256, `minAppVersion` and the feature-flag map (kill switches). Used by: blocklist\_verifier, feature\_flags\_provider.
 - `app/assets/blocklist/SOURCES.md`. Contains: upstream lists, their licences (EasyList and EasyPrivacy are dual-licensed GPLv3-or-later and CC BY-SA 3.0-or-later; attribution to The EasyList authors is required and the converted list is published under the same terms) and a note of modifications. Used by: about\_screen licences, store documents.
 - `app/assets/blocklist/update_public_key.txt`. Contains: the Ed25519 public key (base64). Used by: blocklist\_verifier. The keypair is generated before this batch is pushed, so the real public key is committed here.
 - `tools/blocklist/pubspec.yaml`. Contains: the pure-Dart tool package.
-- `tools/blocklist/convert_abp_to_canonical.dart`. Contains: a CLI that reads ABP-syntax lists, keeps the supported subset (domain anchors, path prefixes, `$third-party`, resource types, `$domain=`, `##` element hiding), drops the rest (regex, scriptlets, redirects), reports the dropped counts, enforces size and rule-count caps, and writes two files: the compact seed bundled in the app and the full list published on the website.
+- `tools/blocklist/convert_abp_to_canonical.dart`. Contains: a CLI that reads ABP-syntax lists, keeps the supported subset (domain anchors, path prefixes, `$third-party`, resource types, `$domain=`, `##` element hiding), drops the rest (regex, scriptlets, redirects), reports the dropped counts, enforces size and rule-count caps, and writes the full list, which is both bundled in the app and published on the website.
 - `tools/blocklist/sign_blocklist.dart`. Contains: computes sha256, writes the manifest with the next version and signs it with the Ed25519 private key from the environment.
 - `.github/workflows/publish-blocklist.yml`. Contains: manual; downloads the upstream lists, runs the converter and signer with `BLOCKLIST_SIGNING_KEY_B64`, and pushes `latest.txt`, `manifest.json` and `manifest.sig` in `website/blocklist/` to a `batch/blocklist-<run>` branch with `GITHUB_TOKEN` for the agent to verify and merge (D-50).
 
@@ -1210,7 +1210,7 @@ Run: branch `batch/b42`, commit `b42: iOS release configuration`.
 ### B43. Website (independent of the app)
 
 - `website/index.html`. Contains: the one-sentence description, the honest feature list, the parity statement, screenshots, semantic HTML, Open Graph and `SoftwareApplication` JSON-LD. Store links are added when the listings exist. A stub with the name, description and contact already exists from the hosting setup and is replaced here.
-- `website/privacy.html`. Contains: what we collect (nothing ourselves); what third parties collect (the ad SDK and consent form, store billing, the platform Safe Browsing checks by Google and Apple); on-device translation with Google-hosted model downloads; Cast's local-network discovery and the media address sent to the receiver; download notifications; what stays on the device; the first-launch blocklist download and the manual refresh, which expose the device's address to the static host; regional rights; how to delete data (Clear browsing data or uninstall); contact.
+- `website/privacy.html`. Contains: what we collect (nothing ourselves); what third parties collect (the ad SDK and consent form, store billing, the platform Safe Browsing checks by Google and Apple); on-device translation with Google-hosted model downloads; Cast's local-network discovery and the media address sent to the receiver; download notifications; what stays on the device; the blocklist refresh (manual, or weekly if switched on), which exposes the device's address to the static host; nothing is downloaded on first launch; regional rights; how to delete data (Clear browsing data or uninstall); contact.
 - `website/support.html`. Contains: an FAQ (sign-in pages and the system browser, ad-blocking limits, restoring a purchase, clearing data, translation models) and a contact email.
 - `website/style.css`. Contains: tokens mirrored as CSS variables, light and dark through `prefers-color-scheme`, responsive, no external fonts.
 - `website/robots.txt`, `website/sitemap.xml`, `website/images/og-image.svg`. Contains: crawl and share assets.
@@ -1293,7 +1293,7 @@ Each decision is also recorded in `docs/DECISIONS.md` (B0), with the reason and 
 | D-23 | `background_downloader` for all https downloads | It gives pause, resume, background and notifications on both platforms |
 | D-24 | iPhone only, iOS 15.5 | The translation plugin sets the floor; tablets run the phone layout |
 | D-25 | UMP with ATT on iOS; non-personalized ads without consent | AdMob on iOS cannot avoid the ATT prompt |
-| D-26 | Compact blocklist seed in the app, full list downloaded on first launch, 3% size ratchet | Keeps the binary small without downloading code |
+| D-26 | The full signed blocklist is bundled in the app (about 1.2 MB compressed) and refreshed from the website; 3% size ratchet. Supersedes the earlier compact seed plus first-launch download (see D-103) | Complete blocking on first launch and offline, no first-launch request to our site, and the bundled list is verified like a download |
 | D-27 | No built-in password manager in this version | iOS web views cannot save or offer system passwords; a manager is a project of its own |
 | D-28 | Default browser and iOS Add to Home Screen ship when Apple grants the entitlement | Apple gates both behind one entitlement |
 | D-29 | `google_mobile_ads` pinned at 9.1.0 | Confirmed published; exact pins are enforced by CI |

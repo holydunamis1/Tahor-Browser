@@ -70,8 +70,9 @@ class BlocklistStatus {
 /// Owns the blocklist in use.
 ///
 /// It starts from the list saved by an earlier refresh (checked again, in
-/// case the file was changed) or, failing that, the starter list inside the
-/// app. A refresh downloads the signed manifest, and only when it is newer
+/// case the file was changed) or, failing that, the list bundled in the app,
+/// which is the full signed list published when the app was built and is
+/// checked in the same way. A refresh downloads the signed manifest, and only when it is newer
 /// downloads the list; the new list replaces the old one only after it has
 /// passed every check. A failed, tampered or older download never replaces
 /// the list in use.
@@ -80,14 +81,16 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
     required this.http,
     required this.files,
     required this.verifier,
-    required this.loadAssetText,
+    required this.loadAssetBytes,
     required this.appVersion,
     DateTime Function()? clock,
   }) : _clock = clock ?? DateTime.now,
        super(const BlocklistStatus());
 
-  static const String seedAsset = 'assets/blocklist/canonical_blocklist.txt';
-  static const String seedManifestAsset = 'assets/blocklist/manifest.json';
+  static const String bundledListAsset =
+      'assets/blocklist/canonical_blocklist.txt';
+  static const String bundledManifestAsset = 'assets/blocklist/manifest.json';
+  static const String bundledSignatureAsset = 'assets/blocklist/manifest.sig';
 
   static const String _listKey = 'list.txt';
   static const String _manifestKey = 'manifest.json';
@@ -96,7 +99,7 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
   final HttpClient http;
   final FileStore files;
   final BlocklistVerifier verifier;
-  final Future<String> Function(String assetPath) loadAssetText;
+  final Future<Uint8List> Function(String assetPath) loadAssetBytes;
   final String appVersion;
   final DateTime Function() _clock;
 
@@ -106,7 +109,7 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
   /// The rules in use.
   List<BlocklistRule> get rules => _rules;
 
-  /// The manifest of the list in use; null for the bundled starter list.
+  /// The manifest of the list in use; null only when no list could be loaded.
   BlocklistManifest? get manifest => _manifest;
 
   /// Kill switches from the manifest in use; empty means everything is on.
@@ -127,12 +130,35 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
     );
   }
 
-  /// Loads the saved list when it is still valid, otherwise the starter list.
+  /// Loads the saved list when it is still valid, otherwise the bundled list.
   Future<void> initialize() async {
     if (await _loadSaved()) {
       return;
     }
     await _loadBundled();
+  }
+
+  /// Parses [list] once it has passed every check against its signed manifest.
+  /// Returns null when anything is wrong.
+  Future<({List<BlocklistRule> rules, BlocklistManifest manifest})?> _checked(
+    Uint8List list,
+    Uint8List manifestBytes,
+    Uint8List signature,
+  ) async {
+    final VerificationResult checked = await verifier.verifyManifest(
+      manifestJson: utf8.decode(manifestBytes),
+      signature: base64Decode(utf8.decode(signature).trim()),
+      currentVersion: 0,
+      appVersion: appVersion,
+    );
+    final BlocklistManifest? manifest = checked.manifest;
+    if (manifest == null || !(await verifier.verifyList(manifest, list)).isOk) {
+      return null;
+    }
+    final ParseResult parsed = parseCanonical(utf8.decode(list));
+    return parsed.rules.isEmpty
+        ? null
+        : (rules: parsed.rules, manifest: manifest);
   }
 
   Future<bool> _loadSaved() async {
@@ -152,46 +178,56 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
       if (list == null || manifestBytes == null || sig == null) {
         return false;
       }
-      final VerificationResult checked = await verifier.verifyManifest(
-        manifestJson: utf8.decode(manifestBytes),
-        signature: base64Decode(utf8.decode(sig).trim()),
-        currentVersion: 0,
-        appVersion: appVersion,
-      );
-      final BlocklistManifest? manifest = checked.manifest;
-      if (manifest == null ||
-          !(await verifier.verifyList(manifest, list)).isOk) {
-        return false;
-      }
-      final ParseResult parsed = parseCanonical(utf8.decode(list));
-      if (parsed.rules.isEmpty) {
+      final loaded = await _checked(list, manifestBytes, sig);
+      if (loaded == null) {
         return false;
       }
       _use(
-        parsed.rules,
+        loaded.rules,
         BlocklistSource.downloaded,
-        manifest.version,
-        manifest: manifest,
+        loaded.manifest.version,
+        manifest: loaded.manifest,
       );
       return true;
     } on Object {
       // A damaged or unreadable file, or a storage plugin that throws, means
-      // the starter list is used.
+      // the bundled list is used.
       return false;
     }
   }
 
+  /// Loads the list bundled in the app. It is checked like a download: a
+  /// packaging mistake or a damaged asset leaves no list, and says why in
+  /// [BlocklistStatus.lastError] rather than blocking with something unchecked.
   Future<void> _loadBundled() async {
     try {
-      final ParseResult parsed = parseCanonical(await loadAssetText(seedAsset));
-      final BlocklistManifest? marker = BlocklistManifest.tryParse(
-        await loadAssetText(seedManifestAsset),
+      final loaded = await _checked(
+        await loadAssetBytes(bundledListAsset),
+        await loadAssetBytes(bundledManifestAsset),
+        await loadAssetBytes(bundledSignatureAsset),
       );
-      _use(parsed.rules, BlocklistSource.bundled, marker?.version ?? 0);
+      if (loaded == null) {
+        _use(const <BlocklistRule>[], BlocklistSource.none, 0);
+        value = value.copyWith(
+          lastError: const BlocklistError.verificationFailed(
+            detail: 'bundled list',
+          ),
+        );
+        return;
+      }
+      _use(
+        loaded.rules,
+        BlocklistSource.bundled,
+        loaded.manifest.version,
+        manifest: loaded.manifest,
+      );
     } on Object {
       // A missing asset throws an Error, not an Exception, so both are caught:
-      // the browser still works, just without a starter list.
+      // the browser still works, just without a blocklist.
       _use(const <BlocklistRule>[], BlocklistSource.none, 0);
+      value = value.copyWith(
+        lastError: const BlocklistError.invalid(detail: 'bundled list missing'),
+      );
     }
   }
 

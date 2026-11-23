@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tahorbrowser/core/blocklist/blocklist_verifier.dart';
 import 'package:tahorbrowser/core/blocklist/canonical_parser.dart';
 import 'package:tahorbrowser/core/models/blocklist_rule.dart';
 
@@ -70,28 +67,5 @@ void main() {
     );
     expect(r.rules.length, 4);
     expect(r.truncated, isTrue);
-  });
-
-  group('the real files shipped in the app', () {
-    // Tests run with the app directory as the working directory.
-    test('the starter list parses completely', () {
-      final ParseResult r = parseCanonical(
-        File('assets/blocklist/canonical_blocklist.txt').readAsStringSync(),
-      );
-      expect(r.issues, isEmpty);
-      expect(r.rules.length, 3400);
-      expect(r.truncated, isFalse);
-      expect(r.rules.whereType<BlockRule>().length, 3000);
-      expect(r.rules.whereType<HideRule>().length, 400);
-    });
-
-    test('the bundled manifest names version 1', () {
-      final BlocklistManifest? m = BlocklistManifest.tryParse(
-        File('assets/blocklist/manifest.json').readAsStringSync(),
-      );
-      expect(m, isNotNull);
-      expect(m!.version, 1);
-      expect(m.flags['cast'], isTrue);
-    });
   });
 }

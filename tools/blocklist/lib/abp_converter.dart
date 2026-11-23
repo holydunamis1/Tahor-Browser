@@ -306,26 +306,3 @@ String? _toRegex(String pattern, ConvertResult result) {
   }
   return regex;
 }
-
-/// Picks a compact starter list from [all]: first the pure host blocks (rules
-/// that block a whole third-party host and nothing else), then generic hide
-/// rules, up to the given caps. The order of the input is kept.
-List<String> selectSeed(
-  List<String> all, {
-  required int maxBlocks,
-  required int maxHides,
-}) {
-  final RegExp hostOnly = RegExp(
-    r'^block\|\^\[\^:\]\+://\+\(\[\^:/\]\+\\\.\)\?[a-z0-9\\.-]+\[/:\?\]\|\*\|(third|\*)\|\*\|\*$',
-  );
-  final List<String> blocks = <String>[];
-  final List<String> hides = <String>[];
-  for (final String rule in all) {
-    if (blocks.length < maxBlocks && hostOnly.hasMatch(rule)) {
-      blocks.add(rule);
-    } else if (hides.length < maxHides && rule.startsWith('hide|*|')) {
-      hides.add(rule);
-    }
-  }
-  return <String>[...blocks, ...hides];
-}
