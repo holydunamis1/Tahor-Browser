@@ -10,7 +10,7 @@ List<Map<String, Object?>> decode(String list) =>
 BlockRule block(String filter, {RuleParty party = RuleParty.any}) =>
     BlockRule(urlFilter: filter, party: party);
 
-String hostRule(String host) =
+String hostRule(String host) =>
     '^[^:]+://+([^:/]+\\.)?${host.replaceAll('.', '\\.')}[/:?]';
 
 void main() {
@@ -85,23 +85,26 @@ void main() {
       );
     });
 
-    test('element hiding is a css-display-none rule, scoped when it has domains', () {
-      final List<Map<String, Object?>> rules = decode(
-        ContentRuleCompiler.compileIos(<BlocklistRule>[
-          const HideRule(selector: '.ad'),
-          const HideRule(selector: '.promo', domains: <String>['a.com']),
-        ]).lists.single,
-      );
-      expect(rules[0]['action'], <String, Object?>{
-        'type': 'css-display-none',
-        'selector': '.ad',
-      });
-      expect(rules[0]['trigger'], <String, Object?>{'url-filter': '.*'});
-      expect(
-        (rules[1]['trigger']! as Map<String, Object?>)['if-domain'],
-        <String>['*a.com'],
-      );
-    });
+    test(
+      'element hiding is a css-display-none rule, scoped when it has domains',
+      () {
+        final List<Map<String, Object?>> rules = decode(
+          ContentRuleCompiler.compileIos(<BlocklistRule>[
+            const HideRule(selector: '.ad'),
+            const HideRule(selector: '.promo', domains: <String>['a.com']),
+          ]).lists.single,
+        );
+        expect(rules[0]['action'], <String, Object?>{
+          'type': 'css-display-none',
+          'selector': '.ad',
+        });
+        expect(rules[0]['trigger'], <String, Object?>{'url-filter': '.*'});
+        expect(
+          (rules[1]['trigger']! as Map<String, Object?>)['if-domain'],
+          <String>['*a.com'],
+        );
+      },
+    );
 
     test('per-site exceptions are appended to every list', () {
       final IosRuleLists out = ContentRuleCompiler.compileIos(
@@ -111,7 +114,9 @@ void main() {
       expect(out.lists.length, 2);
       for (final String list in out.lists) {
         final Map<String, Object?> last = decode(list).last;
-        expect(last['action'], <String, Object?>{'type': 'ignore-previous-rules'});
+        expect(last['action'], <String, Object?>{
+          'type': 'ignore-previous-rules',
+        });
         expect(
           (last['trigger']! as Map<String, Object?>)['if-domain'],
           <String>['*site.com'],
@@ -137,7 +142,10 @@ void main() {
         for (int i = 0; i < 5; i++) block('b$i.x'),
         const AllowRule(urlFilter: 'good.x'),
       ];
-      final IosRuleLists out = ContentRuleCompiler.compileIos(rules, listLimit: 3);
+      final IosRuleLists out = ContentRuleCompiler.compileIos(
+        rules,
+        listLimit: 3,
+      );
       expect(out.lists.length, 3);
       for (final String list in out.lists) {
         final List<Map<String, Object?>> l = decode(list);
@@ -148,19 +156,19 @@ void main() {
     });
 
     test('allow rules beyond a quarter of a list are dropped', () {
-      final IosRuleLists out = ContentRuleCompiler.compileIos(
-        <BlocklistRule>[
-          block('a.b'),
-          for (int i = 0; i < 6; i++) AllowRule(urlFilter: 'g$i.x'),
-        ],
-        listLimit: 8,
-      );
+      final IosRuleLists out = ContentRuleCompiler.compileIos(<BlocklistRule>[
+        block('a.b'),
+        for (int i = 0; i < 6; i++) AllowRule(urlFilter: 'g$i.x'),
+      ], listLimit: 8);
       expect(out.skipped, 4);
       expect(decode(out.lists.single).length, 3);
     });
 
     test('the output is the same every time', () {
-      final List<BlocklistRule> rules = <BlocklistRule>[block('a.b'), block('c.d')];
+      final List<BlocklistRule> rules = <BlocklistRule>[
+        block('a.b'),
+        block('c.d'),
+      ];
       expect(
         ContentRuleCompiler.compileIos(rules).lists,
         ContentRuleCompiler.compileIos(rules).lists,
@@ -174,14 +182,17 @@ void main() {
 
   group('Android', () {
     test('host blocks with the same conditions become one pattern', () {
-      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(<BlocklistRule>[
-        block(hostRule('a.com')),
-        block(hostRule('b.org')),
-        block(hostRule('c.net')),
-      ]);
+      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(
+        <BlocklistRule>[
+          block(hostRule('a.com')),
+          block(hostRule('b.org')),
+          block(hostRule('c.net')),
+        ],
+      );
       expect(out.entries.length, 1);
       final String filter =
-          (out.entries.single['trigger']! as Map<String, Object?>)['url-filter']!
+          (out.entries.single['trigger']!
+                  as Map<String, Object?>)['url-filter']!
               as String;
       expect(filter, contains(r'(a\.com|b\.org|c\.net)'));
     });
@@ -203,10 +214,12 @@ void main() {
     });
 
     test('different conditions are kept apart', () {
-      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(<BlocklistRule>[
-        block(hostRule('a.com')),
-        block(hostRule('b.org'), party: RuleParty.third),
-      ]);
+      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(
+        <BlocklistRule>[
+          block(hostRule('a.com')),
+          block(hostRule('b.org'), party: RuleParty.third),
+        ],
+      );
       expect(out.entries.length, 2);
     });
 
@@ -219,9 +232,9 @@ void main() {
     });
 
     test('other rules stay as they are', () {
-      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(<BlocklistRule>[
-        block('/banner/ads/.*'),
-      ]);
+      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(
+        <BlocklistRule>[block('/banner/ads/.*')],
+      );
       expect(
         (out.entries.single['trigger']! as Map<String, Object?>)['url-filter'],
         '/banner/ads/.*',
@@ -229,12 +242,14 @@ void main() {
     });
 
     test('exceptions are dropped and counted; hiding is left to the cosmetic filter', () {
-      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(<BlocklistRule>[
-        block(hostRule('a.com')),
-        const AllowRule(urlFilter: 'good.x'),
-        const AllowRule(urlFilter: 'good2.x'),
-        const HideRule(selector: '.x'),
-      ]);
+      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(
+        <BlocklistRule>[
+          block(hostRule('a.com')),
+          const AllowRule(urlFilter: 'good.x'),
+          const AllowRule(urlFilter: 'good2.x'),
+          const HideRule(selector: '.x'),
+        ],
+      );
       expect(out.droppedAllows, 2);
       expect(out.entries.length, 1);
     });
@@ -249,13 +264,15 @@ void main() {
     });
 
     test('a rule with both domain lists is skipped', () {
-      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(<BlocklistRule>[
-        const BlockRule(
-          urlFilter: 'x.y',
-          ifDomains: <String>['a.com'],
-          unlessDomains: <String>['b.com'],
-        ),
-      ]);
+      final AndroidRuleSet out = ContentRuleCompiler.compileAndroid(
+        <BlocklistRule>[
+          const BlockRule(
+            urlFilter: 'x.y',
+            ifDomains: <String>['a.com'],
+            unlessDomains: <String>['b.com'],
+          ),
+        ],
+      );
       expect(out.skipped, 1);
       expect(out.entries, isEmpty);
     });
