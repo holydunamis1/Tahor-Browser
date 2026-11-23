@@ -174,8 +174,9 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
         manifest: manifest,
       );
       return true;
-    } on Exception {
-      // A damaged or unreadable file means the starter list is used.
+    } on Object {
+      // A damaged or unreadable file, or a storage plugin that throws, means
+      // the starter list is used.
       return false;
     }
   }
@@ -291,9 +292,9 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
       await files.write(StorageKeys.blocklistNamespace, _listKey, list);
       await files.write(StorageKeys.blocklistNamespace, _manifestKey, manifest);
       await files.write(StorageKeys.blocklistNamespace, _signatureKey, sig);
-    } on Exception {
-      // The new list is in use for this session; the next start downloads it
-      // again if it could not be saved.
+    } on Object {
+      // Storage trouble must never undo a successful refresh. The new list is
+      // in use for this session; the next start downloads it again.
     }
   }
 }

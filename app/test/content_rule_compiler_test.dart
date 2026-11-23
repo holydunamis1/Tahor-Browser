@@ -139,20 +139,21 @@ void main() {
 
     test('lists never exceed the limit, and exceptions stay in each', () {
       final List<BlocklistRule> rules = <BlocklistRule>[
-        for (int i = 0; i < 5; i++) block('b$i.x'),
+        for (int i = 0; i < 7; i++) block('b$i.x'),
         const AllowRule(urlFilter: 'good.x'),
       ];
       final IosRuleLists out = ContentRuleCompiler.compileIos(
         rules,
-        listLimit: 3,
+        listLimit: 4,
       );
+      // Room for one exception per list leaves three blocks in each.
       expect(out.lists.length, 3);
       for (final String list in out.lists) {
         final List<Map<String, Object?>> l = decode(list);
-        expect(l.length, lessThanOrEqualTo(3));
+        expect(l.length, lessThanOrEqualTo(4));
         expect((l.last['action']! as Map)['type'], 'ignore-previous-rules');
       }
-      expect(out.ruleCount, 5);
+      expect(out.ruleCount, 7);
     });
 
     test('allow rules beyond a quarter of a list are dropped', () {

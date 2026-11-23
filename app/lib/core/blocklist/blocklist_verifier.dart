@@ -136,7 +136,9 @@ class BlocklistVerifier {
           publicKey: SimplePublicKey(_publicKey, type: KeyPairType.ed25519),
         ),
       );
-    } on Exception {
+    } on Object {
+      // A malformed signature makes the crypto library throw an Error, not an
+      // Exception; either way the manifest is not signed.
       signed = false;
     }
     if (!signed) {

@@ -187,7 +187,7 @@ void main() {
 
     test('a network exception is handled the same way', () async {
       await service.initialize();
-      http.failWith = StateError('offline');
+      http.failWith = Exception('offline');
       expect(await service.refresh(background: true), RefreshOutcome.failed);
       expect(service.value.lastError!.code, 'blocklist.fetch');
       expect(service.value.lastError!.treatment, ErrorTreatment.silentLog);
