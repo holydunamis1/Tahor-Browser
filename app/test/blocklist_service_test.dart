@@ -20,11 +20,7 @@ void main() {
 
   const String seedText =
       'block|seed\\.one|*|*|*|*\nblock|seed\\.two|*|*|*|*\n';
-  final Map<String, String> assets = <String, String>{
-    BlocklistService.seedAsset: seedText,
-    BlocklistService.seedManifestAsset:
-        '{"version":1,"sha256":"${'a' * 64}","size":1,"minAppVersion":"0.1.0"}',
-  };
+  late Map<String, Uint8List> assets;
 
   Uint8List bytes(String s) => Uint8List.fromList(utf8.encode(s));
 
@@ -53,7 +49,13 @@ void main() {
     http: http,
     files: store ?? files,
     verifier: BlocklistVerifier(signer.publicKey),
-    loadAssetText: (String path) async => assets[path]!,
+    loadAssetBytes: (String path) async {
+      final Uint8List? asset = assets[path];
+      if (asset == null) {
+        throw StateError('no asset $path');
+      }
+      return asset;
+    },
     appVersion: '0.1.0',
     clock: () => DateTime.utc(2026, 11, 22),
   );
@@ -62,42 +64,53 @@ void main() {
     signer = await TestSigner.create();
     http = FakeHttpClient();
     files = FakeFileStore();
+    final bundled = await signer.manifestFor(bytes(seedText), version: 1);
+    assets = <String, Uint8List>{
+      BlocklistService.bundledListAsset: bytes(seedText),
+      BlocklistService.bundledManifestAsset: bytes(bundled.json),
+      BlocklistService.bundledSignatureAsset: bytes(bundled.signature),
+    };
     service = make();
   });
 
   group('starting up', () {
-    test('with nothing saved the starter list in the app is used', () async {
+    test('with nothing saved the list bundled in the app is used', () async {
       await service.initialize();
       expect(service.value.source, BlocklistSource.bundled);
       expect(service.value.version, 1);
+      expect(service.value.lastError, isNull);
       expect(service.rules.length, 2);
-      expect(service.manifest, isNull);
-      expect(service.flags, isEmpty);
+      expect(service.manifest, isNotNull);
+      expect(service.flags['cast'], isTrue);
     });
 
-    test(
-      'a missing starter list leaves an empty blocklist, not a crash',
-      () async {
-        assets.remove(BlocklistService.seedAsset);
-        addTearDown(() => assets[BlocklistService.seedAsset] = seedText);
-        service = BlocklistService(
-          http: http,
-          files: files,
-          verifier: BlocklistVerifier(signer.publicKey),
-          loadAssetText: (String path) async {
-            final String? text = assets[path];
-            if (text == null) {
-              throw StateError('no asset');
-            }
-            return text;
-          },
-          appVersion: '0.1.0',
-        );
-        await service.initialize();
-        expect(service.value.source, BlocklistSource.none);
-        expect(service.rules, isEmpty);
-      },
-    );
+    test('a missing bundled list leaves no blocklist and says why', () async {
+      assets.remove(BlocklistService.bundledListAsset);
+      await service.initialize();
+      expect(service.value.source, BlocklistSource.none);
+      expect(service.rules, isEmpty);
+      expect(service.value.lastError!.code, 'blocklist.invalid');
+    });
+
+    test('a bundled list that fails its checks is not used', () async {
+      assets[BlocklistService.bundledListAsset] = bytes(
+        'block|tampered\\.one|*|*|*|*\n',
+      );
+      await service.initialize();
+      expect(service.value.source, BlocklistSource.none);
+      expect(service.rules, isEmpty);
+      expect(service.value.lastError!.code, 'blocklist.verification');
+    });
+
+    test('a bundled signature from another key is not trusted', () async {
+      final other = await (await TestSigner.create(9))
+          .manifestFor(bytes(seedText), version: 1);
+      assets[BlocklistService.bundledManifestAsset] = bytes(other.json);
+      assets[BlocklistService.bundledSignatureAsset] = bytes(other.signature);
+      await service.initialize();
+      expect(service.value.source, BlocklistSource.none);
+      expect(service.value.lastError!.code, 'blocklist.verification');
+    });
   });
 
   group('refreshing', () {

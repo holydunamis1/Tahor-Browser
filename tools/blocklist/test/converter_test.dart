@@ -163,34 +163,4 @@ void main() {
       expect(r.dropped.values.fold(0, (int a, int b) => a + b), 6);
     });
   });
-
-  group('the seed', () {
-    test(
-      'keeps pure host blocks first, then generic hide rules, within the caps',
-      () {
-        final ConvertResult r = run(<String>[
-          '||a.com^',
-          '||b.com^',
-          r'||c.com^$third-party',
-          '/path/only/here',
-          r'||d.com^$script',
-          '##.one',
-          '##.two',
-          'x.com##.three',
-        ]);
-        final List<String> seed = selectSeed(
-          r.rules,
-          maxBlocks: 3,
-          maxHides: 1,
-        );
-        expect(seed.where((String s) => s.startsWith('block|')).length, 3);
-        expect(
-          seed.where((String s) => s.startsWith('hide|')).toList(),
-          <String>['hide|*|.one'],
-        );
-        expect(seed.any((String s) => s.contains('/path/only/here')), isFalse);
-        expect(seed.any((String s) => s.contains(r'd\.com')), isFalse);
-      },
-    );
-  });
 }

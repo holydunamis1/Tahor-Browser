@@ -3,7 +3,7 @@ name: publish-blocklist
 # Manual. Downloads EasyList and EasyPrivacy, converts them to the canonical
 # format, signs the full list, and commits the results to the branch it runs on:
 #   website/blocklist/{latest.txt,manifest.json,manifest.sig}  (published by the website)
-#   app/assets/blocklist/{canonical_blocklist.txt,manifest.json}  (the seed in the app)
+#   app/assets/blocklist/{canonical_blocklist.txt,manifest.json,manifest.sig}  (the same list, bundled in the app)
 # Run it on a batch branch to review the result in a pull request.
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ jobs:
           CI_SHOW: '1'
         run: |
           bash ../../tool/ci_run.sh convert dart run convert_abp_to_canonical.dart \
-            --out-full /tmp/full.txt --out-seed /tmp/seed.txt \
+            --out-full /tmp/full.txt \
             /tmp/lists/easylist.txt /tmp/lists/easyprivacy.txt
 
       - name: Sign the full list
@@ -71,8 +71,9 @@ jobs:
           cp /tmp/manifest.json website/blocklist/manifest.json
           cp /tmp/manifest.sig website/blocklist/manifest.sig
           mkdir -p app/assets/blocklist
-          cp /tmp/seed.txt app/assets/blocklist/canonical_blocklist.txt
+          cp /tmp/full.txt app/assets/blocklist/canonical_blocklist.txt
           cp /tmp/manifest.json app/assets/blocklist/manifest.json
+          cp /tmp/manifest.sig app/assets/blocklist/manifest.sig
           ls -l website/blocklist app/assets/blocklist
 
       - name: Commit

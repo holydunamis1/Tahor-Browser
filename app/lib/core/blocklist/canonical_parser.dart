@@ -38,7 +38,7 @@ final RegExp _domain = RegExp(r'^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$');
 ParseResult parseCanonical(
   String text, {
   int maxRules = 400000,
-  int maxLineLength = 2048,
+  int maxLineLength = 16384,
 }) {
   final List<BlocklistRule> rules = <BlocklistRule>[];
   final List<ParseIssue> issues = <ParseIssue>[];
