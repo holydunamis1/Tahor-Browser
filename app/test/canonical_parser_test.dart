@@ -54,8 +54,18 @@ void main() {
       expect(reasonOf('hide|*|'), 'selector is empty or too long');
     });
 
+    test('a long domain list is accepted, as real lists have them', () {
+      final String domains = List<String>.generate(
+        700,
+        (int i) => 'site$i.example.com',
+      ).join(',');
+      final ParseResult r = parseCanonical('allow|x\\.y|*|*|$domains|*');
+      expect(r.issues, isEmpty);
+      expect((r.rules.single as AllowRule).ifDomains.length, 700);
+    });
+
     test('a very long line is refused', () {
-      final String long = 'block|${'a' * 3000}|*|*|*|*';
+      final String long = 'block|${'a' * 20000}|*|*|*|*';
       expect(reasonOf(long), 'line too long');
     });
   });
