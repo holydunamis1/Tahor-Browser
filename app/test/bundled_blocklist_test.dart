@@ -8,6 +8,7 @@ import 'package:tahorbrowser/core/blocklist/blocklist_verifier.dart';
 import 'package:tahorbrowser/core/blocklist/canonical_parser.dart';
 import 'package:tahorbrowser/core/models/blocklist_rule.dart';
 
+import 'support/blocklist_support.dart';
 import 'support/fakes.dart';
 
 /// The files that ship inside the app, checked with the key that ships inside
