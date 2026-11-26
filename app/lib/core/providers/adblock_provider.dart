@@ -26,11 +26,10 @@ class AdblockProvider extends ChangeNotifier {
     required this.settings,
     required this.sites,
     required this.flags,
-    required KeyValueStore store,
+    required this._store,
     DateTime Function()? clock,
     CompileRunner? runner,
-  }) : _store = store,
-       _clock = clock ?? DateTime.now,
+  }) : _clock = clock ?? DateTime.now,
        _runner = runner ?? _runHere {
     blocklist.addListener(_changed);
     settings.addListener(_changed);

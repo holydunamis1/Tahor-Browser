@@ -8,8 +8,7 @@ import 'tabs_provider.dart';
 /// other by host. It notifies on every change, so ad blocking and the engine
 /// can re-apply.
 class SiteSettingsProvider extends ChangeNotifier {
-  SiteSettingsProvider({required this.service, required TabsProvider tabs})
-    : _tabs = tabs {
+  SiteSettingsProvider({required this.service, required this._tabs}) {
     _tabs.addListener(_onTabs);
     _host = hostOf(_tabs.value.activeTab.url);
   }
