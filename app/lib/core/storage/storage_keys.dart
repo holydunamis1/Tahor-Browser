@@ -4,6 +4,7 @@ abstract final class StorageKeys {
   static const String settings = 'app_settings';
   static const String keyValueSchemaVersion = 'schema.key_value';
   static const String sessionSnapshot = 'session_snapshot';
+  static const String blocklistLastCheck = 'blocklist.last_check';
 
   // File store namespaces.
   static const String webViewStateNamespace = 'webview_state';

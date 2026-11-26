@@ -29,6 +29,12 @@ class SettingsProvider extends ValueNotifier<AppSettings> {
   Future<void> setSearchEngine(String id) =>
       _change((AppSettings s) => s.copyWith(searchEngineId: id));
 
+  Future<void> setAdblockEnabled(bool enabled) =>
+      _change((AppSettings s) => s.copyWith(adblockEnabled: enabled));
+
+  Future<void> setBlocklistAutoUpdate(bool enabled) =>
+      _change((AppSettings s) => s.copyWith(blocklistAutoUpdate: enabled));
+
   Future<void> setStartupMode(StartupMode mode) =>
       _change((AppSettings s) => s.copyWith(startupMode: mode));
 

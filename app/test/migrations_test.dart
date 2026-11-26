@@ -32,8 +32,8 @@ void main() {
       );
     });
 
-    test('with no steps the latest version is the baseline, 1', () {
-      expect(DatabaseMigrations.app.latestVersion, 1);
+    test('the app has the baseline plus the site settings step', () {
+      expect(DatabaseMigrations.app.latestVersion, 2);
       expect(
         DatabaseMigrations(const <Migration<SqlExecutor>>[]).latestVersion,
         1,

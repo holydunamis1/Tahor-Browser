@@ -25,6 +25,8 @@ void main() {
         'searchEngineId': 'duckduckgo',
         'localeCode': null,
         'startupMode': 'continueSession',
+        'adblockEnabled': true,
+        'blocklistAutoUpdate': false,
       });
     });
 

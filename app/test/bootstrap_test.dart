@@ -9,6 +9,7 @@ import 'package:tahorbrowser/core/models/app_settings.dart';
 import 'package:tahorbrowser/core/services/settings_service.dart';
 import 'package:tahorbrowser/platform/platform_factory.dart';
 
+import 'support/blocklist_support.dart';
 import 'support/fakes.dart';
 
 void main() {
@@ -22,6 +23,7 @@ void main() {
     keyValueStore: store,
     localDatabase: FakeLocalDatabase(),
     fileStore: FakeFileStore(),
+    httpClient: FakeHttpClient(),
     appInfo: FakeAppInfo(),
   );
 
@@ -29,6 +31,7 @@ void main() {
     final FakeBrowserEngine engine = FakeBrowserEngine();
     final GlobalErrorHandler handler = GlobalErrorHandler();
     final AppDependencies deps = await bootstrap(
+      loadAssetBytes: await tinyBlocklistAssets(),
       errorHandler: handler,
       platform: services(engine, FakeKeyValueStore()),
     );
@@ -42,6 +45,7 @@ void main() {
   test('installs the navigation policy on the engine', () async {
     final FakeBrowserEngine engine = FakeBrowserEngine();
     await bootstrap(
+      loadAssetBytes: await tinyBlocklistAssets(),
       errorHandler: GlobalErrorHandler(),
       platform: services(engine, FakeKeyValueStore()),
     );
@@ -78,6 +82,7 @@ void main() {
       }),
     });
     final AppDependencies deps = await bootstrap(
+      loadAssetBytes: await tinyBlocklistAssets(),
       errorHandler: GlobalErrorHandler(),
       platform: services(FakeBrowserEngine(), store),
     );
@@ -93,6 +98,7 @@ void main() {
   test('a failing store still starts the app on defaults', () async {
     final FakeKeyValueStore store = FakeKeyValueStore()..failed = true;
     final AppDependencies deps = await bootstrap(
+      loadAssetBytes: await tinyBlocklistAssets(),
       errorHandler: GlobalErrorHandler(),
       platform: services(FakeBrowserEngine(), store),
     );

@@ -6,6 +6,7 @@ import '../core/app_scope.dart';
 import '../core/constants/route_names.dart';
 import '../core/constants/spacing.dart';
 import '../core/models/tab_model.dart';
+import '../core/providers/site_settings_provider.dart';
 import '../core/providers/tabs_provider.dart';
 import '../core/theme/theme_builder.dart';
 import '../l10n/l10n_extensions.dart';
@@ -14,6 +15,8 @@ import '../widgets/browser/browser_menu_sheet.dart';
 import '../widgets/browser/browser_nav_bar.dart';
 import '../widgets/browser/new_tab_page.dart';
 import '../widgets/browser/page_progress_bar.dart';
+import '../widgets/browser/shield_button.dart';
+import '../widgets/browser/shield_sheet.dart';
 import '../widgets/browser/tab_count_button.dart';
 import '../widgets/core/app_scaffold.dart';
 import '../widgets/core/clipboard_action.dart';
@@ -127,6 +130,27 @@ class _BrowserScreenState extends State<BrowserScreen> {
     ];
   }
 
+  /// The ad-blocking shield, only while a web page is showing.
+  Widget? _shield(AppDependencies deps, TabModel tab) {
+    final String? host = SiteSettingsProvider.hostOf(tab.url);
+    if (host == null) {
+      return null;
+    }
+    return ListenableBuilder(
+      listenable: deps.adblock,
+      builder: (BuildContext context, Widget? _) => ShieldButton(
+        state: !deps.adblock.enabled
+            ? ShieldState.off
+            : deps.siteSettings.forHost(host).adblockEnabled
+            ? ShieldState.on
+            : ShieldState.siteOff,
+        onTap: () => unawaited(
+          showShieldSheet(context: context, deps: deps, host: host),
+        ),
+      ),
+    );
+  }
+
   Future<void> _copyLink(AppDependencies deps, String url) async {
     // Read before the await: the context may not be usable afterwards.
     final l10n = context.l10n;
@@ -165,6 +189,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
                   ),
                   child: AddressBar(
                     focusNode: _addressFocus,
+                    trailing: _shield(deps, tab),
                     url: tab.url,
                     onSubmitted: (String text) {
                       deps.tabs.navigate(text);

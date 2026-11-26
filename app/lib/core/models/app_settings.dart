@@ -27,6 +27,8 @@ class AppSettings {
     this.searchEngineId = AppConstants.defaultSearchEngineId,
     this.localeCode,
     this.startupMode = StartupMode.continueSession,
+    this.adblockEnabled = true,
+    this.blocklistAutoUpdate = false,
   });
 
   /// The version written into every saved value.
@@ -42,12 +44,21 @@ class AppSettings {
 
   final StartupMode startupMode;
 
+  /// The global ad-blocking switch.
+  final bool adblockEnabled;
+
+  /// Check for a newer blocklist about once a week. Off unless the person
+  /// turns it on.
+  final bool blocklistAutoUpdate;
+
   /// Reads a saved value. Never throws: anything unusable becomes a default.
   factory AppSettings.fromJson(Map<String, Object?> json) {
     final Object? mode = json['themeMode'];
     final Object? engine = json['searchEngineId'];
     final Object? locale = json['localeCode'];
     final Object? startup = json['startupMode'];
+    final Object? adblock = json['adblockEnabled'];
+    final Object? auto = json['blocklistAutoUpdate'];
     return AppSettings(
       themeMode: mode is String
           ? (AppThemeMode.values.asNameMap()[mode] ?? AppThemeMode.system)
@@ -60,6 +71,8 @@ class AppSettings {
           ? (StartupMode.values.asNameMap()[startup] ??
                 StartupMode.continueSession)
           : StartupMode.continueSession,
+      adblockEnabled: adblock is bool ? adblock : true,
+      blocklistAutoUpdate: auto is bool ? auto : false,
     );
   }
 
@@ -75,6 +88,8 @@ class AppSettings {
     'searchEngineId': searchEngineId,
     'localeCode': localeCode,
     'startupMode': startupMode.name,
+    'adblockEnabled': adblockEnabled,
+    'blocklistAutoUpdate': blocklistAutoUpdate,
   };
 
   /// A copy with changes. Pass `localeCode: null` to go back to the phone's
@@ -84,6 +99,8 @@ class AppSettings {
     String? searchEngineId,
     Object? localeCode = _keep,
     StartupMode? startupMode,
+    bool? adblockEnabled,
+    bool? blocklistAutoUpdate,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -92,6 +109,8 @@ class AppSettings {
           ? this.localeCode
           : localeCode as String?,
       startupMode: startupMode ?? this.startupMode,
+      adblockEnabled: adblockEnabled ?? this.adblockEnabled,
+      blocklistAutoUpdate: blocklistAutoUpdate ?? this.blocklistAutoUpdate,
     );
   }
 
@@ -101,11 +120,19 @@ class AppSettings {
       other.themeMode == themeMode &&
       other.searchEngineId == searchEngineId &&
       other.localeCode == localeCode &&
-      other.startupMode == startupMode;
+      other.startupMode == startupMode &&
+      other.adblockEnabled == adblockEnabled &&
+      other.blocklistAutoUpdate == blocklistAutoUpdate;
 
   @override
-  int get hashCode =>
-      Object.hash(themeMode, searchEngineId, localeCode, startupMode);
+  int get hashCode => Object.hash(
+    themeMode,
+    searchEngineId,
+    localeCode,
+    startupMode,
+    adblockEnabled,
+    blocklistAutoUpdate,
+  );
 
   @override
   String toString() =>

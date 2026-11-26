@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tahorbrowser/app/app_shell.dart';
@@ -6,17 +8,26 @@ import 'package:tahorbrowser/core/app_scope.dart';
 import 'package:tahorbrowser/core/error/global_error_handler.dart';
 import 'package:tahorbrowser/platform/platform_factory.dart';
 
+import 'blocklist_support.dart';
 import 'fakes.dart';
 
 /// The real app built over fakes.
 class TestApp {
-  TestApp._(this.deps, this.engine, this.launcher, this.share, this.store);
+  TestApp._(
+    this.deps,
+    this.engine,
+    this.launcher,
+    this.share,
+    this.store,
+    this.http,
+  );
 
   final AppDependencies deps;
   final FakeBrowserEngine engine;
   final FakeLauncher launcher;
   final FakeShare share;
   final FakeKeyValueStore store;
+  final FakeHttpClient http;
 
   Widget get widget => AppScope(dependencies: deps, child: const AppShell());
 
@@ -28,10 +39,15 @@ class TestApp {
     final FakeBrowserEngine engine = FakeBrowserEngine();
     final FakeLauncher launcher = FakeLauncher();
     final FakeShare share = FakeShare();
+    final FakeHttpClient http = FakeHttpClient();
     final FakeKeyValueStore keyValues = store ?? FakeKeyValueStore();
+    final Future<Uint8List> Function(String) assets = (await tester.runAsync(
+      tinyBlocklistAssets,
+    ))!;
     final AppDependencies deps = (await tester.runAsync(
       () => bootstrap(
         errorHandler: GlobalErrorHandler(),
+        loadAssetBytes: assets,
         platform: PlatformServices(
           engine: engine,
           launcher: launcher,
@@ -39,11 +55,19 @@ class TestApp {
           keyValueStore: keyValues,
           localDatabase: FakeLocalDatabase(),
           fileStore: FakeFileStore(),
+          httpClient: http,
           appInfo: FakeAppInfo(),
         ),
       ),
     ))!;
-    final TestApp app = TestApp._(deps, engine, launcher, share, keyValues);
+    final TestApp app = TestApp._(
+      deps,
+      engine,
+      launcher,
+      share,
+      keyValues,
+      http,
+    );
     await tester.pumpWidget(app.widget);
     await tester.pumpAndSettle();
     return app;

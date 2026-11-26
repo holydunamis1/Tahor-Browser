@@ -4,9 +4,13 @@ import 'contracts/app_info.dart';
 import 'contracts/external_launcher.dart';
 import 'contracts/share.dart';
 import 'error/global_error_handler.dart';
+import 'blocklist/blocklist_service.dart';
+import 'providers/adblock_provider.dart';
+import 'providers/feature_flags_provider.dart';
 import 'providers/feedback_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/site_settings_provider.dart';
 import 'providers/tabs_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/session_restore_service.dart';
@@ -32,6 +36,10 @@ class AppDependencies {
     required this.persistenceGuard,
     required this.thumbnails,
     required this.feedback,
+    required this.blocklist,
+    required this.siteSettings,
+    required this.featureFlags,
+    required this.adblock,
   });
 
   final SettingsProvider settings;
@@ -47,12 +55,20 @@ class AppDependencies {
   final PersistenceGuard persistenceGuard;
   final ThumbnailCache thumbnails;
   final FeedbackProvider feedback;
+  final BlocklistService blocklist;
+  final SiteSettingsProvider siteSettings;
+  final FeatureFlagsProvider featureFlags;
+  final AdblockProvider adblock;
 
   /// Stops the background work. Called when the app goes away.
   void dispose() {
     sessionRestore.dispose();
     tabLifecycle.dispose();
     feedback.dispose();
+    adblock.dispose();
+    featureFlags.dispose();
+    siteSettings.dispose();
+    blocklist.dispose();
   }
 }
 

@@ -317,5 +317,138 @@
   "dialogCancel": "Cancel",
   "@dialogCancel": {
     "description": "Button that dismisses a confirmation without doing anything."
+  },
+  "settingsAdBlocking": "Ad blocking",
+  "@settingsAdBlocking": {
+    "description": "Settings row that opens the ad blocking screen."
+  },
+  "adblockTitle": "Ad blocking",
+  "@adblockTitle": {
+    "description": "Title of the ad blocking screen."
+  },
+  "adblockSwitch": "Block ads and trackers",
+  "@adblockSwitch": {
+    "description": "Switch that turns ad blocking on or off everywhere."
+  },
+  "adblockSwitchHint": "Hides ads and stops trackers on ordinary web pages.",
+  "@adblockSwitchHint": {
+    "description": "Line under the ad blocking switch."
+  },
+  "adblockListSection": "Filter list",
+  "@adblockListSection": {
+    "description": "Section title for the filter list details."
+  },
+  "adblockListVersion": "Version",
+  "@adblockListVersion": {
+    "description": "Label for the filter list version."
+  },
+  "adblockListRules": "Rules",
+  "@adblockListRules": {
+    "description": "Label for the number of rules in the filter list."
+  },
+  "adblockListSource": "Source",
+  "@adblockListSource": {
+    "description": "Label for where the filter list came from."
+  },
+  "adblockSourceBundled": "Built into the app",
+  "@adblockSourceBundled": {
+    "description": "Filter list source: the list that came with the app."
+  },
+  "adblockSourceDownloaded": "Downloaded update",
+  "@adblockSourceDownloaded": {
+    "description": "Filter list source: a newer list downloaded from our website."
+  },
+  "adblockSourceNone": "No list loaded",
+  "@adblockSourceNone": {
+    "description": "Filter list source: no list could be loaded."
+  },
+  "adblockChecked": "Last checked",
+  "@adblockChecked": {
+    "description": "Label for when the website was last asked for a newer list."
+  },
+  "adblockNeverChecked": "Not checked yet",
+  "@adblockNeverChecked": {
+    "description": "Shown when the website has not been asked for a newer list."
+  },
+  "adblockUpdateNow": "Update lists now",
+  "@adblockUpdateNow": {
+    "description": "Button that asks the website for a newer filter list."
+  },
+  "adblockUpdating": "Updating…",
+  "@adblockUpdating": {
+    "description": "Button text while the filter list is being updated."
+  },
+  "adblockUpdated": "The list was updated",
+  "@adblockUpdated": {
+    "description": "Shown after a newer filter list was installed."
+  },
+  "adblockUpToDate": "The list is already up to date",
+  "@adblockUpToDate": {
+    "description": "Shown when there is no newer filter list."
+  },
+  "adblockUpdateFailed": "Couldn't update the list. The current list is still in use.",
+  "@adblockUpdateFailed": {
+    "description": "Shown when updating the filter list failed."
+  },
+  "adblockUpdatesPaused": "Updates are paused for now.",
+  "@adblockUpdatesPaused": {
+    "description": "Shown instead of the update button when updates are switched off."
+  },
+  "adblockWeekly": "Check for updates weekly",
+  "@adblockWeekly": {
+    "description": "Switch for the weekly filter list check."
+  },
+  "adblockWeeklyHint": "Asks our website once a week. Off unless you turn it on.",
+  "@adblockWeeklyHint": {
+    "description": "Line under the weekly update switch."
+  },
+  "adblockExceptions": "Sites with ad blocking off",
+  "@adblockExceptions": {
+    "description": "Section title for the list of sites where ad blocking is off."
+  },
+  "adblockExceptionsEmpty": "No sites. Turn ad blocking off for a site from the shield.",
+  "@adblockExceptionsEmpty": {
+    "description": "Shown when no site has ad blocking turned off."
+  },
+  "adblockExceptionRemove": "Turn ad blocking back on for {host}",
+  "@adblockExceptionRemove": {
+    "description": "Spoken label of the button that removes a site's exception.",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "adblockLimits": "Ads inside video streams, including most YouTube ads, are not blocked. Some sites may look or work differently with ad blocking on; turn it off for a site from the shield.",
+  "@adblockLimits": {
+    "description": "Honest note about what ad blocking does not do."
+  },
+  "shieldOn": "Ad blocking is on for this site",
+  "@shieldOn": {
+    "description": "Spoken label of the shield button when ad blocking is on."
+  },
+  "shieldSiteOff": "Ad blocking is off for this site",
+  "@shieldSiteOff": {
+    "description": "Spoken label of the shield button when the site is an exception."
+  },
+  "shieldOff": "Ad blocking is off",
+  "@shieldOff": {
+    "description": "Spoken label of the shield button when ad blocking is off everywhere."
+  },
+  "shieldSheetTitle": "Ad blocking",
+  "@shieldSheetTitle": {
+    "description": "Title of the sheet opened by the shield button."
+  },
+  "shieldSwitch": "Block ads on this site",
+  "@shieldSwitch": {
+    "description": "Switch that turns ad blocking on or off for one site."
+  },
+  "shieldGlobalOff": "Ad blocking is off everywhere. Turn it on in Settings.",
+  "@shieldGlobalOff": {
+    "description": "Shown in the shield sheet when ad blocking is switched off globally."
+  },
+  "shieldMoreSettings": "Ad blocking settings",
+  "@shieldMoreSettings": {
+    "description": "Row in the shield sheet that opens the ad blocking screen."
   }
 }

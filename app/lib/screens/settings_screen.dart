@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../core/app_scope.dart';
 import '../core/constants/app_constants.dart';
+import '../core/constants/route_names.dart';
 import '../core/models/app_settings.dart';
 import '../l10n/l10n_extensions.dart';
 import '../widgets/core/app_scaffold.dart';
@@ -9,6 +10,7 @@ import '../widgets/core/screen_nav_bar.dart';
 import '../widgets/core/section_header.dart';
 import '../widgets/icons/semantic_icons.dart';
 import '../widgets/settings/setting_choice_tile.dart';
+import '../widgets/settings/setting_tile.dart';
 
 /// Settings. Other sections arrive with the batches that need them.
 class SettingsScreen extends StatelessWidget {
@@ -65,6 +67,12 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
                 onChanged: deps.settings.setThemeMode,
+              ),
+              SettingTile(
+                title: l10n.settingsAdBlocking,
+                glyph: AppIcons.shieldCheck,
+                onTap: () =>
+                    Navigator.of(context).pushNamed<void>(RouteNames.adblock),
               ),
               SectionHeader(l10n.settingsSearch),
               SettingChoiceTile<String>(

@@ -252,3 +252,69 @@ class FakeLocalDatabase implements LocalDatabase {
   @override
   Future<void> close() async => opened = false;
 }
+
+/// A [LocalDatabase] that understands the few statements the site settings
+/// service runs, and keeps its rows in memory. Real SQL is covered by the
+/// integration tests on a device.
+class FakeSiteDatabase implements LocalDatabase {
+  final Map<String, Map<String, Object?>> rows =
+      <String, Map<String, Object?>>{};
+  bool failReads = false;
+  bool failWrites = false;
+  bool opened = true;
+
+  @override
+  bool get isOpen => opened;
+
+  @override
+  Future<void> open(DatabaseSchema schema) async => opened = true;
+
+  @override
+  Future<void> execute(
+    String sql, [
+    List<Object?> arguments = const <Object?>[],
+  ]) async {
+    if (failWrites) {
+      throw StateError('write failed');
+    }
+    if (sql.startsWith('INSERT OR REPLACE INTO site_settings')) {
+      final List<String> columns = <String>[
+        'host',
+        'js_enabled',
+        'desktop_mode',
+        'adblock_enabled',
+        'camera',
+        'microphone',
+        'location',
+        'updated_at',
+      ];
+      rows[arguments[0]! as String] = <String, Object?>{
+        for (int i = 0; i < columns.length; i++) columns[i]: arguments[i],
+      };
+    } else if (sql.startsWith('DELETE FROM site_settings WHERE host')) {
+      rows.remove(arguments[0]);
+    } else if (sql == 'DELETE FROM site_settings') {
+      rows.clear();
+    }
+  }
+
+  @override
+  Future<List<DbRow>> query(
+    String sql, [
+    List<Object?> arguments = const <Object?>[],
+  ]) async {
+    if (failReads) {
+      throw StateError('read failed');
+    }
+    return <DbRow>[
+      for (final Map<String, Object?> r in rows.values) <String, Object?>{...r},
+    ];
+  }
+
+  @override
+  Future<T> transaction<T>(Future<T> Function(SqlExecutor txn) action) =>
+      action(this);
+
+  @override
+  Future<void> close() async => opened = false;
+}

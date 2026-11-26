@@ -2,11 +2,13 @@ import '../core/contracts/app_info.dart';
 import '../core/contracts/browser_engine.dart';
 import '../core/contracts/external_launcher.dart';
 import '../core/contracts/file_store.dart';
+import '../core/contracts/http_client.dart';
 import '../core/contracts/key_value_store.dart';
 import '../core/contracts/local_database.dart';
 import '../core/contracts/share.dart';
 import 'android/android_browser_engine.dart';
 import 'android/android_external_launcher.dart';
+import 'common/http_client_adapter.dart';
 import 'common/io_file_store.dart';
 import 'common/package_info_app_info.dart';
 import 'common/share_plus_share.dart';
@@ -26,6 +28,7 @@ class PlatformServices {
     required this.keyValueStore,
     required this.localDatabase,
     required this.fileStore,
+    required this.httpClient,
     required this.appInfo,
   });
 
@@ -35,6 +38,7 @@ class PlatformServices {
   final KeyValueStore keyValueStore;
   final LocalDatabase localDatabase;
   final FileStore fileStore;
+  final HttpClient httpClient;
   final AppInfo appInfo;
 }
 
@@ -57,6 +61,7 @@ Future<PlatformServices> createPlatformServices(PlatformInfo info) async {
     // Created now, opened by the first feature that needs them.
     localDatabase: SqfliteLocalDatabase(),
     fileStore: IoFileStore(),
+    httpClient: HttpPackageClient(),
     appInfo: await PackageInfoAppInfo.load(),
   );
 }

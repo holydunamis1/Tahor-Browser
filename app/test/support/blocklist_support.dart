@@ -72,3 +72,26 @@ class FakeHttpClient implements HttpClient {
     return responses[url.toString()] ?? HttpResult(404, Uint8List(0));
   }
 }
+
+/// The blocklist files the app would ship, as a small signed bundle, and the
+/// public key asset that checks them. For tests that boot the whole app.
+Future<Future<Uint8List> Function(String)> tinyBlocklistAssets({
+  TestSigner? signer,
+}) async {
+  signer ??= await TestSigner.create();
+  final Uint8List list = Uint8List.fromList(
+    utf8.encode('block|tiny\\.one|*|*|*|*\nhide|*|.promo\n'),
+  );
+  final m = await signer.manifestFor(list, version: 1);
+  final Map<String, Uint8List> assets = <String, Uint8List>{
+    'assets/blocklist/canonical_blocklist.txt': list,
+    'assets/blocklist/manifest.json': Uint8List.fromList(utf8.encode(m.json)),
+    'assets/blocklist/manifest.sig': Uint8List.fromList(
+      utf8.encode(m.signature),
+    ),
+    'assets/blocklist/update_public_key.txt': Uint8List.fromList(
+      utf8.encode(base64Encode(signer.publicKey)),
+    ),
+  };
+  return (String path) async => assets[path]!;
+}

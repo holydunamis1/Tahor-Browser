@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../core/constants/route_names.dart';
+import '../screens/adblock_settings_screen.dart';
 import '../screens/browser_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/tabs_screen.dart';
@@ -17,6 +18,11 @@ abstract final class AppRoutes {
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
           pageBuilder: (BuildContext context, _, _) => const BrowserScreen(),
+        );
+      case RouteNames.adblock:
+        return AppPageRoute<void>(
+          settings: settings,
+          builder: (BuildContext context) => const AdblockSettingsScreen(),
         );
       case RouteNames.tabs:
         return AppPageRoute<void>(

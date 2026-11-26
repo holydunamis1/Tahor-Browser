@@ -1,5 +1,6 @@
 import '../contracts/key_value_store.dart';
 import '../contracts/local_database.dart';
+import '../services/site_settings_service.dart';
 import 'storage_keys.dart';
 
 /// One step that brings a store from [toVersion] - 1 to [toVersion].
@@ -31,9 +32,15 @@ class DatabaseMigrations {
     : steps = _validated<SqlExecutor>(steps);
 
   /// The migrations the app ships. Later batches append their steps:
-  /// site settings (2), downloads (3), history (4), bookmarks (5).
+  /// downloads (3), history (4), bookmarks (5). Step 2 is site settings.
   static final DatabaseMigrations app = DatabaseMigrations(
-    const <Migration<SqlExecutor>>[],
+    <Migration<SqlExecutor>>[
+      // 2: per-site settings.
+      Migration<SqlExecutor>(
+        2,
+        (SqlExecutor db) => db.execute(SiteSettingsService.createTable),
+      ),
+    ],
   );
 
   /// Version 1: a small table the app can use for bookkeeping.
