@@ -115,9 +115,6 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
   }
 
   @override
-  BlocklistStatus get value => super.value;
-
-  @override
   void dispose() {
     _disposed = true;
     super.dispose();
