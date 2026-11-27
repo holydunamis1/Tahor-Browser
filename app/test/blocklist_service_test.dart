@@ -113,6 +113,23 @@ void main() {
     });
   });
 
+  group('after the app is torn down', () {
+    test('a load that finishes late is dropped without an error', () async {
+      final Future<void> loading = service.initialize();
+      service.dispose();
+      await loading;
+      expect(service.rules, isNotEmpty, reason: 'the rules are still readable');
+    });
+
+    test('a refresh that finishes late is dropped without an error', () async {
+      await service.initialize();
+      await publish();
+      final Future<RefreshOutcome> refreshing = service.refresh();
+      service.dispose();
+      await refreshing;
+    });
+  });
+
   group('refreshing', () {
     test('a newer signed list is downloaded, checked and put to use', () async {
       await service.initialize();

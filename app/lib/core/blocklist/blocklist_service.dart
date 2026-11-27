@@ -103,6 +103,26 @@ class BlocklistService extends ValueNotifier<BlocklistStatus> {
   final String appVersion;
   final DateTime Function() _clock;
 
+  bool _disposed = false;
+
+  /// The background load or a refresh can finish after the app has been torn
+  /// down; its result is then simply dropped.
+  @override
+  set value(BlocklistStatus newValue) {
+    if (!_disposed) {
+      super.value = newValue;
+    }
+  }
+
+  @override
+  BlocklistStatus get value => super.value;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
   List<BlocklistRule> _rules = const <BlocklistRule>[];
   BlocklistManifest? _manifest;
 
