@@ -74,101 +74,106 @@ class _AdblockSettingsScreenState extends State<AdblockSettingsScreen> {
             BlocklistSource.none => l10n.adblockSourceNone,
           };
           final List<String> exceptions = deps.siteSettings.adblockExceptions;
-          return ListView(
+          // A short page: everything is built at once, so nothing below the
+          // fold is missing for screen readers or tests.
+          return SingleChildScrollView(
             padding: AppInsets.symmetric(vertical: Spacing.s),
-            children: <Widget>[
-              SettingSwitch(
-                title: l10n.adblockSwitch,
-                subtitle: l10n.adblockSwitchHint,
-                glyph: AppIcons.shieldCheck,
-                value: deps.settings.value.adblockEnabled,
-                onChanged: deps.settings.setAdblockEnabled,
-              ),
-              SectionHeader(l10n.adblockListSection),
-              PremiumCard(
-                label: l10n.adblockListVersion,
-                value: '${status.version}',
-                showChevron: false,
-              ),
-              PremiumCard(
-                label: l10n.adblockListRules,
-                value: formatNumber(status.ruleCount, locale: locale),
-                showChevron: false,
-              ),
-              PremiumCard(
-                label: l10n.adblockListSource,
-                value: source,
-                showChevron: false,
-              ),
-              PremiumCard(
-                label: l10n.adblockChecked,
-                value: status.checkedAt == null
-                    ? l10n.adblockNeverChecked
-                    : formatDate(status.checkedAt!, locale: locale),
-                showChevron: false,
-              ),
-              Padding(
-                padding: AppInsets.all(Spacing.m),
-                child: deps.adblock.canRefresh
-                    ? PrimaryButton(
-                        label: _updating
-                            ? l10n.adblockUpdating
-                            : l10n.adblockUpdateNow,
-                        glyph: AppIcons.reload,
-                        onPressed: _updating
-                            ? null
-                            : () => unawaited(_update(deps)),
-                      )
-                    : Text(
-                        l10n.adblockUpdatesPaused,
-                        style: theme.text.footnote.copyWith(
-                          color: theme.palette.textSecondary,
-                        ),
-                      ),
-              ),
-              SettingSwitch(
-                title: l10n.adblockWeekly,
-                subtitle: l10n.adblockWeeklyHint,
-                glyph: AppIcons.reload,
-                value: deps.settings.value.blocklistAutoUpdate,
-                onChanged: deps.settings.setBlocklistAutoUpdate,
-              ),
-              SectionHeader(l10n.adblockExceptions),
-              if (exceptions.isEmpty)
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SettingSwitch(
+                  title: l10n.adblockSwitch,
+                  subtitle: l10n.adblockSwitchHint,
+                  glyph: AppIcons.shieldCheck,
+                  value: deps.settings.value.adblockEnabled,
+                  onChanged: deps.settings.setAdblockEnabled,
+                ),
+                SectionHeader(l10n.adblockListSection),
+                PremiumCard(
+                  label: l10n.adblockListVersion,
+                  value: '${status.version}',
+                  showChevron: false,
+                ),
+                PremiumCard(
+                  label: l10n.adblockListRules,
+                  value: formatNumber(status.ruleCount, locale: locale),
+                  showChevron: false,
+                ),
+                PremiumCard(
+                  label: l10n.adblockListSource,
+                  value: source,
+                  showChevron: false,
+                ),
+                PremiumCard(
+                  label: l10n.adblockChecked,
+                  value: status.checkedAt == null
+                      ? l10n.adblockNeverChecked
+                      : formatDate(status.checkedAt!, locale: locale),
+                  showChevron: false,
+                ),
                 Padding(
-                  padding: AppInsets.symmetric(
-                    horizontal: Spacing.m,
-                    vertical: Spacing.s,
-                  ),
+                  padding: AppInsets.all(Spacing.m),
+                  child: deps.adblock.canRefresh
+                      ? PrimaryButton(
+                          label: _updating
+                              ? l10n.adblockUpdating
+                              : l10n.adblockUpdateNow,
+                          glyph: AppIcons.reload,
+                          onPressed: _updating
+                              ? null
+                              : () => unawaited(_update(deps)),
+                        )
+                      : Text(
+                          l10n.adblockUpdatesPaused,
+                          style: theme.text.footnote.copyWith(
+                            color: theme.palette.textSecondary,
+                          ),
+                        ),
+                ),
+                SettingSwitch(
+                  title: l10n.adblockWeekly,
+                  subtitle: l10n.adblockWeeklyHint,
+                  glyph: AppIcons.reload,
+                  value: deps.settings.value.blocklistAutoUpdate,
+                  onChanged: deps.settings.setBlocklistAutoUpdate,
+                ),
+                SectionHeader(l10n.adblockExceptions),
+                if (exceptions.isEmpty)
+                  Padding(
+                    padding: AppInsets.symmetric(
+                      horizontal: Spacing.m,
+                      vertical: Spacing.s,
+                    ),
+                    child: Text(
+                      l10n.adblockExceptionsEmpty,
+                      style: theme.text.footnote.copyWith(
+                        color: theme.palette.textSecondary,
+                      ),
+                    ),
+                  )
+                else
+                  for (final String host in exceptions)
+                    PremiumRow(
+                      key: ValueKey<String>('exception-$host'),
+                      title: host,
+                      trailing: IconChip(
+                        glyph: AppIcons.close,
+                        semanticLabel: l10n.adblockExceptionRemove(host),
+                        onTap: () =>
+                            deps.siteSettings.setAdblock(host, enabled: true),
+                      ),
+                    ),
+                Padding(
+                  padding: AppInsets.all(Spacing.m),
                   child: Text(
-                    l10n.adblockExceptionsEmpty,
+                    l10n.adblockLimits,
                     style: theme.text.footnote.copyWith(
                       color: theme.palette.textSecondary,
                     ),
                   ),
-                )
-              else
-                for (final String host in exceptions)
-                  PremiumRow(
-                    key: ValueKey<String>('exception-$host'),
-                    title: host,
-                    trailing: IconChip(
-                      glyph: AppIcons.close,
-                      semanticLabel: l10n.adblockExceptionRemove(host),
-                      onTap: () =>
-                          deps.siteSettings.setAdblock(host, enabled: true),
-                    ),
-                  ),
-              Padding(
-                padding: AppInsets.all(Spacing.m),
-                child: Text(
-                  l10n.adblockLimits,
-                  style: theme.text.footnote.copyWith(
-                    color: theme.palette.textSecondary,
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),

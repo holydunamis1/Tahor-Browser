@@ -101,7 +101,7 @@ void main() {
     appTest('shows the list that is in use', (WidgetTester tester) async {
       await TestApp.pump(tester);
       await openAdBlockingScreen(tester);
-      expect(find.text('Filter list'), findsOneWidget);
+      expect(find.text('FILTER LIST'), findsOneWidget);
       expect(find.text('Built into the app'), findsOneWidget);
       expect(find.text('Not checked yet'), findsOneWidget);
       expect(find.text('Update lists now'), findsOneWidget);
